@@ -16,16 +16,20 @@ namespace Neyron
         public int Y { get; set; }
         public int Id { get; set; }
 
-        public Pixel(Ellipse form, int x, int y)
+        public Pixel(int x, int y)
         {
-            this.form = form;
             X = x;
             Y = y;
             GlobalId++;
             Id = GlobalId;
             Healh = new Random().Next(100, 256);
-            //Attack = new Random().Next(1, 51);
-            Attack = 1;
+            this.form = new Ellipse()
+            {
+                Height = 25,
+                Width = 25,
+                Fill = new SolidColorBrush(Color.FromRgb(0, (byte)Healh, 33))
+            };
+            Attack = new Random().Next(1, 21);
         }
 
         public void ChangeColor(Brush color)

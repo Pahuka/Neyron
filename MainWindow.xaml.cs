@@ -39,7 +39,6 @@ namespace Neyron
             var color = ((SolidColorBrush)pixel.Show().Fill).Color;
             if (color.G > 0)
             {
-                //var gCanal = (color.G - color.G / pixel.Healh);
                 var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;
                 pixel.Show().Fill = new SolidColorBrush(Color.FromRgb(color.R, gByte, color.B));
             }
@@ -101,7 +100,7 @@ namespace Neyron
                     }
                 }
             }
-            Move(pixel);
+            CalculateMove(pixel);
         }
 
         private void Run(Pixel meat, Pixel hunter)
@@ -115,8 +114,6 @@ namespace Neyron
                     {
                         meat.X += x;
                         meat.Y += y;
-                        //hunter.X += x;
-                        //hunter.Y += y;
                     }
 
                 }
@@ -131,24 +128,17 @@ namespace Neyron
                     pixel1.Healh -= pixel2.Attack;
                     pixel2.Healh -= pixel1.Attack;
                     Run(pixel2, pixel1);
-                    //Hunt(pixel1);
-                    //ChangeColor(pixel1);
-                    //return pixel1;
                 }
                 else
                 {
                     pixel2.Healh -= pixel1.Attack;
                     pixel1.Healh -= pixel2.Attack;
                     Run(pixel1, pixel2);
-                    //Hunt(pixel2);
-                    //ChangeColor(pixel2);
-                    //return pixel2;
                 }
             }
-            //return pixel1;
         }
 
-        private void Move(Pixel pixel)
+        private void CalculateMove(Pixel pixel)
         {
             var randomPos = new Random();
             var x = pixel.X + randomPos.Next(-1, 2);
@@ -161,8 +151,6 @@ namespace Neyron
                 if (tempPixel != null && tempPixel.Healh > 0)
                 {
                     Fight(pixel, tempPixel);
-                    //tempPixel.X = x;
-                    //tempPixel.Y = y;
                 }
                 pixel.X = x;
                 pixel.Y = y;
@@ -171,56 +159,90 @@ namespace Neyron
 
         private void Move(object o, EventArgs e)
         {
-            CreateGrid(int.Parse(sizeX.Text), int.Parse(sizeY.Text));
-
-            foreach (var pixel in pixels)
+            try
             {
-                if (pixel.Value.Show().Fill != Brushes.Black)
+                CreateGrid(int.Parse(sizeX.Text), int.Parse(sizeY.Text));
+                foreach (var pixel in pixels)
                 {
-                    Hunt(pixel.Value);
+                    if (pixel.Value.Show().Fill != Brushes.Black)
+                    {
+                        Hunt(pixel.Value);
+                    }
+                }
+
+                foreach (var pixel in pixels)
+                {
+                    pixel.Value.Healh--;
+                    ChangeColor(pixel.Value);
+                    if (pixel.Value.Healh <= 0)
+                        pixel.Value.Show().Fill = Brushes.Black;
+                    if (pixel.Value.Healh > 0 & !IsWall(pixel.Value.X, pixel.Value.Y))
+                    {
+                        Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.Y);
+                        Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.X);
+                    }
                 }
             }
-
-            foreach (var pixel in pixels)
+            catch (Exception)
             {
-                pixel.Value.Healh--;
-                ChangeColor(pixel.Value);
-                if (pixel.Value.Healh <= 0 && pixel.Value.Healh > 0)
-                    pixel.Value.Show().Fill = Brushes.Black;
-                if (pixel.Value.Healh > 0 & !IsWall(pixel.Value.X, pixel.Value.Y))
-                {
-                    Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.Y);
-                    Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.X);
-                }
+                MessageBox.Show("Вводите координаты X и Y только в виде целых чисел", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                myTimer.Stop();
             }
         }
 
         private void sizeButton_Click(object sender, RoutedEventArgs e)
         {
-            myTimer.Stop();
-            pixels.Clear();
-            CreateGrid(int.Parse(sizeX.Text), int.Parse(sizeY.Text));
-            addPixel.IsEnabled = true;
+            try
+            {
+                var x = int.Parse(sizeX.Text);
+                var y = int.Parse(sizeY.Text);
+                if (x > 100 || y > 100)
+                    throw new ArgumentException();
+                myTimer.Stop();
+                pixels.Clear();
+                CreateGrid(x, y);
+                addPixel.IsEnabled = true;
+            }
+            catch(ArgumentException)
+            {
+                MessageBox.Show("Указан слишком большой размер поля, вводите не больше 100 по оси X или Y", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Вводите координаты X и Y только в виде целых чисел", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void addPixel_Click(object sender, RoutedEventArgs e)
         {
-            myTimer.Stop();
-            var random = new Random();
-            var pixel = new Pixel(new Ellipse()
+            try
             {
-                Height = 25,
-                Width = 25,
-                Fill = new SolidColorBrush(Color.FromRgb(0, 255, 33))
-            }, random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
-            pixels.Add(pixel.Id, pixel);
+                myTimer.Stop();
+                var random = new Random();
+                for (int i = 0; i < int.Parse(pixelCount.Text); i++)
+                {
+                    var pixel = new Pixel(random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
+                    pixels.Add(pixel.Id, pixel);
+                }
 
-            myTimer.Start();
+                myTimer.Start();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void speed_TextChanged(object sender, TextChangedEventArgs e)
         {
-            myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
+            try
+            {
+                myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
