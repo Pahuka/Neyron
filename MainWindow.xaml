@@ -14,8 +14,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="29*"/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="sizeX" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="56" Height="18" Margin="4,0,0,0" UseLayoutRounding="False" Cursor="" Text="10"/>
-        <TextBox x:Name="sizeY" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="56" Height="18" Margin="72,0,0,0" UseLayoutRounding="False" Cursor="" Text="10"/>
+        <TextBox x:Name="sizeX" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="4,0,0,0" UseLayoutRounding="False" Cursor="" Text="10"/>
+        <TextBox x:Name="sizeY" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="60,0,0,0" UseLayoutRounding="False" Cursor="" Text="10"/>
+        <TextBox x:Name="speed" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="116,0,0,0" UseLayoutRounding="False" Cursor="" Text="50" TextChanged="speed_TextChanged"/>
         <Button x:Name="sizeButton" Grid.Row="0" Content="Сброс" HorizontalAlignment="Right" Click="sizeButton_Click" Height="22" Width="100"/>
         <Button x:Name="addPixel" Grid.Row="0" Content="Добавить точку" HorizontalAlignment="Center" Height="22" Width="100" Click="addPixel_Click"/>
     </Grid>

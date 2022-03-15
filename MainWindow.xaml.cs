@@ -23,16 +23,25 @@ namespace Neyron
             InitializeComponent();
             addPixel.IsEnabled = false;
             myTimer.Tick += Move;
-            myTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
 
-        private void ChangeColor(Pixel pixel, bool isHungry)
+        private bool IsWall(int x, int y)
+        {
+            if (x >= 0 & x <= myGrid.ColumnDefinitions.Count)
+                if (y >= 0 & y <= myGrid.RowDefinitions.Count)
+                    return false;
+            return true;
+        }
+
+        private void ChangeColor(Pixel pixel)
         {
             var color = ((SolidColorBrush)pixel.Show().Fill).Color;
             if (color.G > 0)
             {
-                var gCanal = isHungry ? (byte)(color.G - color.G / pixel.Healh) : (byte)(color.G + (byte)pixel.Healh);
-                pixel.Show().Fill = new SolidColorBrush(Color.FromRgb(color.R, gCanal, color.B));
+                //var gCanal = (color.G - color.G / pixel.Healh);
+                var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;
+                pixel.Show().Fill = new SolidColorBrush(Color.FromRgb(color.R, gByte, color.B));
             }
         }
 
@@ -57,7 +66,8 @@ namespace Neyron
 
             foreach (var pixel in pixels)
             {
-                myGrid.Children.Add((UIElement)pixel.Value.Show());
+                if (pixel.Value.Healh > 0)
+                    myGrid.Children.Add((UIElement)pixel.Value.Show());
             }
 
             for (int i = 0; i < x; i++)
@@ -68,8 +78,8 @@ namespace Neyron
             {
                 myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
             }
-            this.SizeToContent = SizeToContent.WidthAndHeight;
             mainGrid.Children.Add(myGrid);
+            this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         private void Hunt(Pixel pixel)
@@ -80,55 +90,83 @@ namespace Neyron
                 {
                     if (x == 0 & y == 0)
                         continue;
-                    var tempPixel = pixels.Where(p => p.Value.X == x & p.Value.Y == y).FirstOrDefault().Value;
-                    if (tempPixel != null && tempPixel.Show().Fill != Brushes.Black)
+                    var tempPixel = pixels
+                        .Where(p => p.Value.X == pixel.X + x & p.Value.Y == pixel.Y + y)
+                        .FirstOrDefault().Value;
+                    if (tempPixel != null && tempPixel.Healh > 0)
                     {
-                        Eat(pixel, tempPixel);
+                        //Fight(pixel, tempPixel);
                         pixel.X += x;
                         pixel.Y += y;
                     }
                 }
             }
+            Move(pixel);
         }
 
-        private void Eat(Pixel pixel1, Pixel pixel2)
+        private void Run(Pixel meat, Pixel hunter)
+        {
+            for (int x = -1; x < 2; x++)
+                for (int y = -1; y < 2; y++)
+                {
+                    if (x == 0 & y == 0 & IsWall(meat.X + x, meat.Y + y))
+                        continue;
+                    if (meat.X + x != hunter.X && meat.Y + y != hunter.Y)
+                    {
+                        meat.X += x;
+                        meat.Y += y;
+                        //hunter.X += x;
+                        //hunter.Y += y;
+                    }
+
+                }
+        }
+
+        private void Fight(Pixel pixel1, Pixel pixel2)
         {
             if (pixel1.Id != pixel2.Id)
             {
-                if (pixel1.Healh > pixel2.Healh)
+                if (pixel1.Healh + pixel1.Attack > pixel2.Healh + pixel2.Attack)
                 {
-                    pixel1.Healh += pixel2.Healh;
-                    ChangeColor(pixel1, false);
-                    pixel2.Healh = 0;
-                    pixel2.ChangeColor(Brushes.Black);
+                    pixel1.Healh -= pixel2.Attack;
+                    pixel2.Healh -= pixel1.Attack;
+                    Run(pixel2, pixel1);
+                    //Hunt(pixel1);
+                    //ChangeColor(pixel1);
+                    //return pixel1;
                 }
                 else
                 {
-                    pixel2.Healh += pixel1.Healh;
-                    ChangeColor(pixel2, false);
-                    pixel1.Healh = 0;
-                    pixel1.ChangeColor(Brushes.Black);
+                    pixel2.Healh -= pixel1.Attack;
+                    pixel1.Healh -= pixel2.Attack;
+                    Run(pixel1, pixel2);
+                    //Hunt(pixel2);
+                    //ChangeColor(pixel2);
+                    //return pixel2;
                 }
             }
+            //return pixel1;
         }
 
-        private void CalculateMove(Pixel pixel)
+        private void Move(Pixel pixel)
         {
             var randomPos = new Random();
-            Hunt(pixel);
             var x = pixel.X + randomPos.Next(-1, 2);
             var y = pixel.Y + randomPos.Next(-1, 2);
-            if (x >= 0 & x <= myGrid.RowDefinitions.Count)
-                if (y >= 0 & y <= myGrid.ColumnDefinitions.Count)
+            if (!IsWall(x, y))
+            {
+                var tempPixel = pixels
+                            .Where(p => p.Value.X == x & p.Value.Y == y & p.Value.Id != pixel.Id)
+                            .FirstOrDefault().Value;
+                if (tempPixel != null && tempPixel.Healh > 0)
                 {
-                    var tempPixel = pixels.Where(p => p.Value.X == x & p.Value.Y == y).FirstOrDefault().Value;
-                    if (tempPixel != null && tempPixel.Show().Fill != Brushes.Black)
-                        Eat(pixel, tempPixel);
-                    //pixel.Healh--;
-                    //ChangeColor(pixel, true);
-                    pixel.X = x;
-                    pixel.Y = y;
+                    Fight(pixel, tempPixel);
+                    //tempPixel.X = x;
+                    //tempPixel.Y = y;
                 }
+                pixel.X = x;
+                pixel.Y = y;
+            }
         }
 
         private void Move(object o, EventArgs e)
@@ -138,16 +176,18 @@ namespace Neyron
             foreach (var pixel in pixels)
             {
                 if (pixel.Value.Show().Fill != Brushes.Black)
-                    CalculateMove(pixel.Value);
+                {
+                    Hunt(pixel.Value);
+                }
             }
 
             foreach (var pixel in pixels)
             {
                 pixel.Value.Healh--;
-                ChangeColor(pixel.Value, true);
-                if (pixel.Value.Healh <= 0 && pixel.Value.Show().Fill != Brushes.Black)
+                ChangeColor(pixel.Value);
+                if (pixel.Value.Healh <= 0 && pixel.Value.Healh > 0)
                     pixel.Value.Show().Fill = Brushes.Black;
-                if (pixel.Value.Show().Fill != Brushes.Black)
+                if (pixel.Value.Healh > 0 & !IsWall(pixel.Value.X, pixel.Value.Y))
                 {
                     Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.Y);
                     Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.X);
@@ -165,6 +205,7 @@ namespace Neyron
 
         private void addPixel_Click(object sender, RoutedEventArgs e)
         {
+            myTimer.Stop();
             var random = new Random();
             var pixel = new Pixel(new Ellipse()
             {
@@ -175,6 +216,11 @@ namespace Neyron
             pixels.Add(pixel.Id, pixel);
 
             myTimer.Start();
+        }
+
+        private void speed_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
     }
 }

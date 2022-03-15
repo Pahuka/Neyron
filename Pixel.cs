@@ -10,6 +10,7 @@ namespace Neyron
     {
         private static int GlobalId { get; set; }
         private Ellipse form;
+        public int Attack { get; set; }
         public int Healh { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
@@ -22,7 +23,9 @@ namespace Neyron
             Y = y;
             GlobalId++;
             Id = GlobalId;
-            Healh = new Random().Next(100, 201);
+            Healh = new Random().Next(100, 256);
+            //Attack = new Random().Next(1, 51);
+            Attack = 1;
         }
 
         public void ChangeColor(Brush color)
