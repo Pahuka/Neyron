@@ -38,7 +38,7 @@ namespace Neyron
             var color = ((SolidColorBrush)pixel.Show().Fill).Color;
             if (color.G > 0)
             {
-                var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;
+                var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;                    
                 pixel.Show().Fill = new SolidColorBrush(Color.FromRgb(color.R, gByte, color.B));
             }
         }
@@ -56,28 +56,31 @@ namespace Neyron
 
             myGrid = new Grid()
             {
-                VerticalAlignment = VerticalAlignment.Top,
+                //VerticalAlignment = VerticalAlignment.Center,
                 ShowGridLines = true
             };
-            Grid.SetRow(myGrid, 1);
-            Grid.SetColumn(myGrid, 0);
 
             foreach (var pixel in pixels)
             {
-                //if (pixel.Value.Healh > 0)
                 myGrid.Children.Add((UIElement)pixel.Value.Show());
             }
 
             for (int i = 0; i < x; i++)
             {
-                myGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(25) });
+                //myGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(25) });
+                myGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                //myGrid.ColumnDefinitions.Add(new ColumnDefinition());
             }
             for (int j = 0; j < y; j++)
             {
-                myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
+                //myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
+                myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+                //myGrid.RowDefinitions.Add(new RowDefinition());
             }
+            Grid.SetRow(myGrid, 1);
+            Grid.SetColumn(myGrid, 0);
             mainGrid.Children.Add(myGrid);
-            this.SizeToContent = SizeToContent.WidthAndHeight;
+            //this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         private void Hunt(Pixel pixel)
@@ -93,7 +96,6 @@ namespace Neyron
                         .FirstOrDefault().Value;
                     if (tempPixel != null && tempPixel.Healh > 0)
                     {
-                        //Fight(pixel, tempPixel);
                         var nextStep = IsWall(pixel, x, y);
                         pixel.X = nextStep.Item1;
                         pixel.Y = nextStep.Item2;
@@ -250,7 +252,12 @@ namespace Neyron
                 var random = new Random();
                 for (int i = 0; i < int.Parse(pixelCount.Text); i++)
                 {
-                    var pixel = new Pixel(random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
+                    var pixel = new Pixel(new Ellipse()
+                    {
+                        Height = myGrid.RowDefinitions[0].ActualHeight,
+                        Width = myGrid.ColumnDefinitions[0].ActualWidth,
+                        Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
+                    }, random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
                     pixels.Add(pixel.Id, pixel);
                 }
                 myTimer.Start();
