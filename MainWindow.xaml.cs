@@ -26,12 +26,11 @@ namespace Neyron
             myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
 
-        private bool IsWall(int x, int y)
+        private Tuple<int, int> IsWall(Pixel pixel, int x, int y)
         {
-            if (x >= 0 & x <= myGrid.ColumnDefinitions.Count)
-                if (y >= 0 & y <= myGrid.RowDefinitions.Count)
-                    return false;
-            return true;
+            var nextX = (x + pixel.X + myGrid.ColumnDefinitions.Count) % myGrid.ColumnDefinitions.Count;
+            var nextY = (y + pixel.Y + myGrid.RowDefinitions.Count) % myGrid.RowDefinitions.Count;
+            return Tuple.Create(nextX, nextY);
         }
 
         private void ChangeColor(Pixel pixel)
@@ -65,8 +64,8 @@ namespace Neyron
 
             foreach (var pixel in pixels)
             {
-                if (pixel.Value.Healh > 0)
-                    myGrid.Children.Add((UIElement)pixel.Value.Show());
+                //if (pixel.Value.Healh > 0)
+                myGrid.Children.Add((UIElement)pixel.Value.Show());
             }
 
             for (int i = 0; i < x; i++)
@@ -95,8 +94,9 @@ namespace Neyron
                     if (tempPixel != null && tempPixel.Healh > 0)
                     {
                         //Fight(pixel, tempPixel);
-                        pixel.X += x;
-                        pixel.Y += y;
+                        var nextStep = IsWall(pixel, x, y);
+                        pixel.X = nextStep.Item1;
+                        pixel.Y = nextStep.Item2;
                     }
                 }
             }
@@ -108,14 +108,34 @@ namespace Neyron
             for (int x = -1; x < 2; x++)
                 for (int y = -1; y < 2; y++)
                 {
-                    if (x == 0 & y == 0 & IsWall(meat.X + x, meat.Y + y))
+                    if (x == 0 & y == 0)
                         continue;
                     if (meat.X + x != hunter.X && meat.Y + y != hunter.Y)
                     {
-                        meat.X += x;
-                        meat.Y += y;
+                        var nextStep = IsWall(meat, x, y);
+                        meat.X = nextStep.Item1;
+                        meat.Y = nextStep.Item2;
                     }
+                }
+        }
 
+        private void Eat(Pixel pixel)
+        {
+            for (int x = -1; x < 2; x++)
+                for (int y = -1; y < 2; y++)
+                {
+                    if (x == 0 & y == 0)
+                        continue;
+                    var tempPixel = pixels
+                            .Where(p => p.Value.X == pixel.X + x & p.Value.Y == pixel.Y + y)
+                            .FirstOrDefault().Value;
+                    if (tempPixel != null && tempPixel.Healh <= 0)
+                    {
+                        pixel.X += x;
+                        pixel.Y += y;
+                        pixel.Healh += 100;
+                        pixels.Remove(tempPixel.Id);
+                    }
                 }
         }
 
@@ -141,27 +161,31 @@ namespace Neyron
         private void CalculateMove(Pixel pixel)
         {
             var randomPos = new Random();
-            var x = pixel.X + randomPos.Next(-1, 2);
-            var y = pixel.Y + randomPos.Next(-1, 2);
-            if (!IsWall(x, y))
+            var nextStep = IsWall(pixel, randomPos.Next(-1, 2), randomPos.Next(-1, 2));
+            var tempPixel = pixels
+                        .Where(p => p.Value.X == nextStep.Item1 & p.Value.Y == nextStep.Item2 & p.Value.Id != pixel.Id)
+                        .FirstOrDefault().Value;
+            if (tempPixel != null && tempPixel.Healh > 0)
             {
-                var tempPixel = pixels
-                            .Where(p => p.Value.X == x & p.Value.Y == y & p.Value.Id != pixel.Id)
-                            .FirstOrDefault().Value;
-                if (tempPixel != null && tempPixel.Healh > 0)
-                {
-                    Fight(pixel, tempPixel);
-                }
-                pixel.X = x;
-                pixel.Y = y;
+                Fight(pixel, tempPixel);
             }
+            pixel.X = nextStep.Item1;
+            pixel.Y = nextStep.Item2;
+            if (pixel.Healh < 100)
+                Eat(pixel);
         }
 
         private void Move(object o, EventArgs e)
         {
             try
             {
-                CreateGrid(int.Parse(sizeX.Text), int.Parse(sizeY.Text));
+                var x = int.Parse(sizeX.Text);
+                var y = int.Parse(sizeY.Text);
+                if (x > 100 || y > 100)
+                    throw new ArgumentException();
+
+                CreateGrid(x, y);
+
                 foreach (var pixel in pixels)
                 {
                     if (pixel.Value.Show().Fill != Brushes.Black)
@@ -176,12 +200,17 @@ namespace Neyron
                     ChangeColor(pixel.Value);
                     if (pixel.Value.Healh <= 0)
                         pixel.Value.Show().Fill = Brushes.Black;
-                    if (pixel.Value.Healh > 0 & !IsWall(pixel.Value.X, pixel.Value.Y))
+                    if (pixel.Value.Healh > 0)
                     {
-                        Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.Y);
-                        Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.X);
+                        Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.X);
+                        Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.Y);
                     }
                 }
+            }
+            catch (ArgumentException)
+            {
+                MessageBox.Show("Указан слишком большой размер поля, вводите не больше 100 по оси X или Y", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                myTimer.Stop();
             }
             catch (Exception)
             {
@@ -203,7 +232,7 @@ namespace Neyron
                 CreateGrid(x, y);
                 addPixel.IsEnabled = true;
             }
-            catch(ArgumentException)
+            catch (ArgumentException)
             {
                 MessageBox.Show("Указан слишком большой размер поля, вводите не больше 100 по оси X или Y", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -224,7 +253,6 @@ namespace Neyron
                     var pixel = new Pixel(random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
                     pixels.Add(pixel.Id, pixel);
                 }
-
                 myTimer.Start();
             }
             catch (Exception)
