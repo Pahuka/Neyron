@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -10,7 +11,7 @@ namespace Neyron
     class Pixel
     {
         private static int GlobalId { get; set; }
-        public TextBox Clan { get; set; }
+        public Label Clan { get; set; }
         public Ellipse Form { get; set; }
         public int Attack { get; set; }
         public int Healh { get; set; }
@@ -27,7 +28,14 @@ namespace Neyron
             Healh = new Random().Next(100, 256);
             Form = form;
             Attack = new Random().Next(1, 21);
-            Clan = new TextBox() { Text = $"{new Random().Next(1, 11)}", Height = 20, Width = 20, IsEnabled = false };
+            Clan = new Label() { 
+                Content = $"{new Random().Next(1, 11)}",
+                IsEnabled = false, 
+                FontWeight = FontWeights.Bold,
+                FontSize = Form.Width / 2,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
         }
 
         public void ChangeColor(Brush color)

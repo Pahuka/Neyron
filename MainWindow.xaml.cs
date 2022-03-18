@@ -78,28 +78,6 @@ namespace Neyron
             //this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
-        //private void Hunt(Pixel pixel)
-        //{
-        //    for (int x = -1; x < 2; x++)
-        //    {
-        //        for (int y = -1; y < 2; y++)
-        //        {
-        //            if (x == 0 & y == 0)
-        //                continue;
-        //            var tempPixel = pixels
-        //                .Where(p => p.Value.X == pixel.X + x & p.Value.Y == pixel.Y + y)
-        //                .FirstOrDefault().Value;
-        //            if (tempPixel != null && tempPixel.Healh > 0 && pixel.Clan.Text != tempPixel.Clan.Text)
-        //            {
-        //                var nextStep = GenerateStep(pixel, x, y);
-        //                pixel.X = nextStep.Item1;
-        //                pixel.Y = nextStep.Item2;
-        //            }
-        //        }
-        //    }
-        //    CalculateMove(pixel);
-        //}
-
         private Pixel Hunt(Pixel pixel)
         {
             Pixel tempPixel = null;
@@ -184,8 +162,9 @@ namespace Neyron
             {
                 if (tempPixel.Healh > 0)
                 {
-                    if (tempPixel.Clan.Text != pixel.Clan.Text)
+                    if (!tempPixel.Clan.Content.Equals(pixel.Clan.Content))
                         Fight(pixel, tempPixel);
+                    ChangeColor(tempPixel);
                 }
                 else
                 {
@@ -195,9 +174,12 @@ namespace Neyron
                         CreateDot(subPixels);
                 }
             }
-            pixel.X = nextStep.Item1;
-            pixel.Y = nextStep.Item2;
-            pixel.Healh--;
+            else
+            {
+                pixel.X = nextStep.Item1;
+                pixel.Y = nextStep.Item2;
+                pixel.Healh--;
+            }
             ChangeColor(pixel);
         }
 
@@ -209,8 +191,6 @@ namespace Neyron
                 var y = int.Parse(sizeY.Text);
                 if (x > 100 || y > 100)
                     throw new ArgumentException();
-
-                //CreateGrid(x, y);
 
                 foreach (var pixel in pixels)
                 {
@@ -224,8 +204,6 @@ namespace Neyron
                 CreateGrid(x, y);
                 foreach (var pixel in pixels)
                 {
-                    //pixel.Value.Healh--;
-                    //ChangeColor(pixel.Value);
                     Grid.SetColumn(pixel.Value.Clan, pixel.Value.X);
                     Grid.SetRow(pixel.Value.Clan, pixel.Value.Y);
                     Grid.SetColumn(pixel.Value.Show(), pixel.Value.X);
@@ -288,10 +266,11 @@ namespace Neyron
         private void CreateDot(Dictionary<int, Pixel> pixels)
         {            
             var random = new Random();
+            var pixelSize = (myGrid.RowDefinitions[0].ActualHeight + myGrid.ColumnDefinitions[0].ActualWidth) / 2.5;
             var pixel = new Pixel(new Ellipse()
             {
-                Height = myGrid.RowDefinitions[0].ActualHeight,
-                Width = myGrid.ColumnDefinitions[0].ActualWidth,
+                Height = pixelSize,
+                Width = pixelSize,
                 Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
             }, random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
             pixels.Add(pixel.Id, pixel);
