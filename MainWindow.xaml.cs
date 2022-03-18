@@ -15,6 +15,7 @@ namespace Neyron
     public partial class MainWindow : Window
     {
         Dictionary<int, Pixel> pixels = new Dictionary<int, Pixel>();
+        Dictionary<int, Pixel> subPixels = new Dictionary<int, Pixel>();
         Grid myGrid;
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
 
@@ -26,7 +27,7 @@ namespace Neyron
             myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
 
-        private Tuple<int, int> IsWall(Pixel pixel, int x, int y)
+        private Tuple<int, int> GenerateStep(Pixel pixel, int x, int y)
         {
             var nextX = (x + pixel.X + myGrid.ColumnDefinitions.Count) % myGrid.ColumnDefinitions.Count;
             var nextY = (y + pixel.Y + myGrid.RowDefinitions.Count) % myGrid.RowDefinitions.Count;
@@ -50,32 +51,26 @@ namespace Neyron
                 foreach (var pixel in pixels)
                 {
                     myGrid.Children.Remove(pixel.Value.Show());
+                    myGrid.Children.Remove(pixel.Value.Clan);
                 }
                 mainGrid.Children.Remove(myGrid);
             }
 
-            myGrid = new Grid()
-            {
-                //VerticalAlignment = VerticalAlignment.Center,
-                ShowGridLines = true
-            };
+            myGrid = new Grid() { ShowGridLines = true };
 
             foreach (var pixel in pixels)
             {
-                myGrid.Children.Add((UIElement)pixel.Value.Show());
+                myGrid.Children.Add(pixel.Value.Show());
+                myGrid.Children.Add(pixel.Value.Clan);
             }
 
             for (int i = 0; i < x; i++)
             {
-                //myGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(25) });
                 myGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
-                //myGrid.ColumnDefinitions.Add(new ColumnDefinition());
             }
             for (int j = 0; j < y; j++)
             {
-                //myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
                 myGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
-                //myGrid.RowDefinitions.Add(new RowDefinition());
             }
             Grid.SetRow(myGrid, 1);
             Grid.SetColumn(myGrid, 0);
@@ -83,26 +78,46 @@ namespace Neyron
             //this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
-        private void Hunt(Pixel pixel)
+        //private void Hunt(Pixel pixel)
+        //{
+        //    for (int x = -1; x < 2; x++)
+        //    {
+        //        for (int y = -1; y < 2; y++)
+        //        {
+        //            if (x == 0 & y == 0)
+        //                continue;
+        //            var tempPixel = pixels
+        //                .Where(p => p.Value.X == pixel.X + x & p.Value.Y == pixel.Y + y)
+        //                .FirstOrDefault().Value;
+        //            if (tempPixel != null && tempPixel.Healh > 0 && pixel.Clan.Text != tempPixel.Clan.Text)
+        //            {
+        //                var nextStep = GenerateStep(pixel, x, y);
+        //                pixel.X = nextStep.Item1;
+        //                pixel.Y = nextStep.Item2;
+        //            }
+        //        }
+        //    }
+        //    CalculateMove(pixel);
+        //}
+
+        private Pixel Hunt(Pixel pixel)
         {
+            Pixel tempPixel = null;
             for (int x = -1; x < 2; x++)
             {
                 for (int y = -1; y < 2; y++)
                 {
+                    var nextStep = GenerateStep(pixel, x, y);
                     if (x == 0 & y == 0)
                         continue;
-                    var tempPixel = pixels
-                        .Where(p => p.Value.X == pixel.X + x & p.Value.Y == pixel.Y + y)
+                    tempPixel = pixels
+                        .Where(p => p.Value.X == nextStep.Item1 & p.Value.Y == nextStep.Item2)
                         .FirstOrDefault().Value;
-                    if (tempPixel != null && tempPixel.Healh > 0)
-                    {
-                        var nextStep = IsWall(pixel, x, y);
-                        pixel.X = nextStep.Item1;
-                        pixel.Y = nextStep.Item2;
-                    }
+                    if (tempPixel != null)
+                        break;
                 }
             }
-            CalculateMove(pixel);
+            return tempPixel;
         }
 
         private void Run(Pixel meat, Pixel hunter)
@@ -114,7 +129,7 @@ namespace Neyron
                         continue;
                     if (meat.X + x != hunter.X && meat.Y + y != hunter.Y)
                     {
-                        var nextStep = IsWall(meat, x, y);
+                        var nextStep = GenerateStep(meat, x, y);
                         meat.X = nextStep.Item1;
                         meat.Y = nextStep.Item2;
                     }
@@ -137,6 +152,8 @@ namespace Neyron
                         pixel.Y += y;
                         pixel.Healh += 100;
                         pixels.Remove(tempPixel.Id);
+                        if (pixel.Healh >= 200)
+                            CreateDot(subPixels);
                     }
                 }
         }
@@ -149,13 +166,11 @@ namespace Neyron
                 {
                     pixel1.Healh -= pixel2.Attack;
                     pixel2.Healh -= pixel1.Attack;
-                    Run(pixel2, pixel1);
                 }
                 else
                 {
                     pixel2.Healh -= pixel1.Attack;
                     pixel1.Healh -= pixel2.Attack;
-                    Run(pixel1, pixel2);
                 }
             }
         }
@@ -163,18 +178,27 @@ namespace Neyron
         private void CalculateMove(Pixel pixel)
         {
             var randomPos = new Random();
-            var nextStep = IsWall(pixel, randomPos.Next(-1, 2), randomPos.Next(-1, 2));
-            var tempPixel = pixels
-                        .Where(p => p.Value.X == nextStep.Item1 & p.Value.Y == nextStep.Item2 & p.Value.Id != pixel.Id)
-                        .FirstOrDefault().Value;
-            if (tempPixel != null && tempPixel.Healh > 0)
+            var nextStep = GenerateStep(pixel, randomPos.Next(-1, 2), randomPos.Next(-1, 2));
+            var tempPixel = Hunt(pixel);
+            if (tempPixel != null)
             {
-                Fight(pixel, tempPixel);
+                if (tempPixel.Healh > 0)
+                {
+                    if (tempPixel.Clan.Text != pixel.Clan.Text)
+                        Fight(pixel, tempPixel);
+                }
+                else
+                {
+                    pixel.Healh += 100;
+                    pixels.Remove(tempPixel.Id);
+                    if (pixel.Healh >= 200)
+                        CreateDot(subPixels);
+                }
             }
             pixel.X = nextStep.Item1;
             pixel.Y = nextStep.Item2;
-            if (pixel.Healh < 100)
-                Eat(pixel);
+            pixel.Healh--;
+            ChangeColor(pixel);
         }
 
         private void Move(object o, EventArgs e)
@@ -186,27 +210,26 @@ namespace Neyron
                 if (x > 100 || y > 100)
                     throw new ArgumentException();
 
-                CreateGrid(x, y);
+                //CreateGrid(x, y);
 
                 foreach (var pixel in pixels)
                 {
-                    if (pixel.Value.Show().Fill != Brushes.Black)
-                    {
-                        Hunt(pixel.Value);
-                    }
+                    if (pixel.Value.Healh > 0)
+                        CalculateMove(pixel.Value);
                 }
 
+                pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
+                subPixels.Clear();
+
+                CreateGrid(x, y);
                 foreach (var pixel in pixels)
                 {
-                    pixel.Value.Healh--;
-                    ChangeColor(pixel.Value);
-                    if (pixel.Value.Healh <= 0)
-                        pixel.Value.Show().Fill = Brushes.Black;
-                    if (pixel.Value.Healh > 0)
-                    {
-                        Grid.SetColumn((UIElement)pixel.Value.Show(), pixel.Value.X);
-                        Grid.SetRow((UIElement)pixel.Value.Show(), pixel.Value.Y);
-                    }
+                    //pixel.Value.Healh--;
+                    //ChangeColor(pixel.Value);
+                    Grid.SetColumn(pixel.Value.Clan, pixel.Value.X);
+                    Grid.SetRow(pixel.Value.Clan, pixel.Value.Y);
+                    Grid.SetColumn(pixel.Value.Show(), pixel.Value.X);
+                    Grid.SetRow(pixel.Value.Show(), pixel.Value.Y);
                 }
             }
             catch (ArgumentException)
@@ -249,16 +272,10 @@ namespace Neyron
             try
             {
                 myTimer.Stop();
-                var random = new Random();
+                
                 for (int i = 0; i < int.Parse(pixelCount.Text); i++)
                 {
-                    var pixel = new Pixel(new Ellipse()
-                    {
-                        Height = myGrid.RowDefinitions[0].ActualHeight,
-                        Width = myGrid.ColumnDefinitions[0].ActualWidth,
-                        Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
-                    }, random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
-                    pixels.Add(pixel.Id, pixel);
+                    CreateDot(pixels);
                 }
                 myTimer.Start();
             }
@@ -266,6 +283,18 @@ namespace Neyron
             {
                 MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void CreateDot(Dictionary<int, Pixel> pixels)
+        {            
+            var random = new Random();
+            var pixel = new Pixel(new Ellipse()
+            {
+                Height = myGrid.RowDefinitions[0].ActualHeight,
+                Width = myGrid.ColumnDefinitions[0].ActualWidth,
+                Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
+            }, random.Next(0, myGrid.ColumnDefinitions.Count), random.Next(0, myGrid.RowDefinitions.Count));
+            pixels.Add(pixel.Id, pixel);
         }
 
         private void speed_TextChanged(object sender, TextChangedEventArgs e)
