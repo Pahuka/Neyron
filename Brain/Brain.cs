@@ -6,7 +6,11 @@ namespace Neyron.Brain
 {
     public class Brain1
     {
-        public List<Neuron> InputNurons { get; set; }
-        public List<Neuron> OutputNeurons { get; set; }
+        public NeuronNetwork brain { get; private set; }
+
+        public Brain1(NeuronNetwork neuronNetwork)
+        {
+            brain = neuronNetwork;
+        }
     }
 }
