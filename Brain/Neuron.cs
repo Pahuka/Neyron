@@ -1,6 +1,7 @@
 ﻿using Neyron.Brain.Brain;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Neyron
@@ -9,15 +10,26 @@ namespace Neyron
     {
         public List<double> Weights { get; set; }
         public NeuronType NType { get; set; }
+        public List<double> Inputs { get; set; }
         public double Output { get; set; }
+        public double Delta { get; set; }
         public Neuron(int inputCount, NeuronType type = NeuronType.Normal)
         {
             NType = type;
             Weights = new List<double>();
+            Inputs = new List<double>();
+            InitWeights(inputCount);
+        }
 
+        private void InitWeights(int inputCount)
+        {
             for (int i = 0; i < inputCount; i++)
             {
-                Weights.Add(1.0);
+                if (NType == NeuronType.Input)
+                    Weights.Add(1);
+                else
+                    Weights.Add(new Random().NextDouble());
+                Inputs.Add(0);
             }
         }
 
@@ -26,7 +38,10 @@ namespace Neyron
             var sum = 0.0;
 
             for (int i = 0; i < inputs.Count; i++)
+            {
                 sum += inputs[i] * Weights[i];
+                Inputs.Add(inputs[i]);
+            }
 
             if (NType != NeuronType.Input)
                 Output = Sigmoid(sum);
@@ -35,19 +50,28 @@ namespace Neyron
             return Output;
         }
 
-        public void SetWeights(params double[] weights)
+        public void Learn(double error, double learningRate)
         {
-            //TODO удалить после обучения сети
+            if (NType == NeuronType.Input)
+                return;
+            Delta = error * SigmoidDx(Output);
 
-            for (int i = 0; i < weights.Length; i++)
+            for (int i = 0; i < Weights.Count; i++)
             {
-                Weights[i] = weights[i];
+                var newWeight = Weights[i] - Inputs[i] * Delta * learningRate;
+                Weights[i] = newWeight;
             }
         }
 
         private double Sigmoid(double x)
         {
             return 1.0 / (1.0 + Math.Pow(Math.E, -x));
+        }
+
+        private double SigmoidDx(double x)
+        {
+            var sigmoid = Sigmoid(x);
+            return sigmoid / (1 - sigmoid);
         }
     }
 }
