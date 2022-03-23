@@ -23,7 +23,7 @@ namespace Neyron
         //Grid myGrid;
         Canvas myCanvas;
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        Topology Topology = new Topology(2, 2, 2, 1);
+        Topology Topology = new Topology(3, 2, 2, 1);
         NeuronNetwork NN;
 
         public MainWindow()
@@ -264,6 +264,7 @@ namespace Neyron
         {
             try
             {
+                var random = new Random();
                 var x = int.Parse(sizeX.Text);
                 var y = int.Parse(sizeY.Text);
                 var inputSignals = new double[pixels.Count];
@@ -272,10 +273,17 @@ namespace Neyron
 
                 foreach (var pixel in pixels.Values)
                 {
-                    //if (pixel.Value.Healh > 0)
-                    var r = NN.FeedForward(new double[] { pixel.X, pixel.Y });
-                    pixel.X += r[0].Output;
-                    pixel.Y += r[1].Output;
+                    var r = NN.FeedForward(new double[] { pixel.X, pixel.Y, random.NextDouble() });
+                    if (pixel.X <= myCanvas.Height)
+                    {
+                        pixel.X += r[0].Output;
+                        pixel.Y += r[1].Output;
+                    }
+                    if (pixel.Y > myCanvas.Width)
+                    {
+                        pixel.Y -= r[1].Output;
+                        pixel.X -= r[0].Output;
+                    }
                 }
 
                 //pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
@@ -306,13 +314,14 @@ namespace Neyron
         {
             try
             {
-                var x = int.Parse(sizeX.Text);
-                var y = int.Parse(sizeY.Text);
-                if (x > 100 || y > 100)
-                    throw new ArgumentException();
+                //var x = int.Parse(sizeX.Text);
+                //var y = int.Parse(sizeY.Text);
+                //if (x > 100 || y > 100)
+                //    throw new ArgumentException();
                 myTimer.Stop();
                 pixels.Clear();
-
+                myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
+                myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
                 var random = new Random();
                 var dot = new Dot(new Ellipse()
                 {
