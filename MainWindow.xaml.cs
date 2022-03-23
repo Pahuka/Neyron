@@ -19,25 +19,58 @@ namespace Neyron
     {
         //Dictionary<int, Pixel> pixels = new Dictionary<int, Pixel>();
         Dictionary<int, Dot> pixels = new Dictionary<int, Dot>();
-        Dictionary<int, Pixel> subPixels = new Dictionary<int, Pixel>();
+        //Dictionary<int, Pixel> subPixels = new Dictionary<int, Pixel>();
+        Dictionary<int, Dot> targets = new Dictionary<int, Dot>();
         //Grid myGrid;
         Canvas myCanvas;
+        Random random = new Random();
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        Topology Topology = new Topology(3, 2, 2, 1);
-        NeuronNetwork NN;
+        //Topology Topology = new Topology(5, 2, 1, 1);
+        //NeuronNetwork NN;
+        NN NN;
+        //List<Tuple<double, double[]>> dataset;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            //dataset = new List<Tuple<double, double[]>>(){
+            //Tuple.Create(0.0, new double[]{
+            //    random.NextDouble(),
+            //    random.NextDouble(),
+            //    400.0, 
+            //    300.0}),
+            //Tuple.Create(0.0, new double[]{
+            //    random.NextDouble(),
+            //    random.NextDouble(),
+            //    400.0,
+            //    300.0}),
+            //Tuple.Create(0.0, new double[]{
+            //    random.NextDouble(),
+            //    random.NextDouble(),
+            //    400.0,
+            //    300.0}),
+            //Tuple.Create(0.0, new double[]{
+            //    random.NextDouble(),
+            //    random.NextDouble(),
+            //    400.0,
+            //    300.0}),
+            //Tuple.Create(0.0, new double[]{
+            //    random.NextDouble(),
+            //    random.NextDouble(),
+            //    400.0,
+            //    300.0})
+            //};
+
             myCanvas = new Canvas();
             Grid.SetColumn(myCanvas, 0);
             Grid.SetRow(myCanvas, 1);
             mainGrid.Children.Add(myCanvas);
-            NN = new NeuronNetwork(Topology);
+            NN = new NN(4, 8, 4);
+            //NN = new NeuronNetwork(Topology);
+            //NN.Learn(dataset, 1000);
 
-
-            addPixel.IsEnabled = false;
+            //addPixel.IsEnabled = false;
             myTimer.Tick += Move;
             myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
@@ -54,7 +87,7 @@ namespace Neyron
             var color = ((SolidColorBrush)pixel.Show().Fill).Color;
             if (color.G > 0)
             {
-                var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;                    
+                var gByte = pixel.Healh <= 0 ? (byte)0 : (byte)pixel.Healh;
                 pixel.Show().Fill = new SolidColorBrush(Color.FromRgb(color.R, gByte, color.B));
             }
         }
@@ -267,22 +300,28 @@ namespace Neyron
                 var random = new Random();
                 var x = int.Parse(sizeX.Text);
                 var y = int.Parse(sizeY.Text);
-                var inputSignals = new double[pixels.Count];
+                var target = targets.Values.FirstOrDefault();
+                //var inputSignals = new double[pixels.Count];
                 if (x > 100 || y > 100)
                     throw new ArgumentException();
 
                 foreach (var pixel in pixels.Values)
                 {
-                    var r = NN.FeedForward(new double[] { pixel.X, pixel.Y, random.NextDouble() });
-                    if (pixel.X <= myCanvas.Height)
+                    var r = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y });
+                    if (r[0] >= 0.5)
                     {
-                        pixel.X += r[0].Output;
-                        pixel.Y += r[1].Output;
+                        pixel.X += r[0] * 10;
+                        //pixel.Y += r[0].Output * 10;
                     }
-                    if (pixel.Y > myCanvas.Width)
+                    if (r[1] >= 0.5)
                     {
-                        pixel.Y -= r[1].Output;
-                        pixel.X -= r[0].Output;
+                        pixel.Y += r[0] * 10;
+                        //pixel.X -= r[0].Output * 10;
+                    }
+                    else
+                    {
+                        pixel.X -= r[0] * 10;
+                        pixel.Y -= r[0] * 10;
                     }
                 }
 
@@ -322,16 +361,17 @@ namespace Neyron
                 pixels.Clear();
                 myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
                 myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
-                var random = new Random();
                 var dot = new Dot(new Ellipse()
                 {
                     Height = 25,
                     Width = 25,
-                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))});
+                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
+                }, "")
+                { X = random.NextDouble(), Y = random.NextDouble() };
                 pixels.Add(dot.Id, dot);
 
                 myCanvas.Children.Add(dot.Show());
-                myTimer.Start();
+                //myTimer.Start();
             }
             catch (ArgumentException)
             {
@@ -348,11 +388,18 @@ namespace Neyron
             try
             {
                 myTimer.Stop();
-                
-                for (int i = 0; i < int.Parse(pixelCount.Text); i++)
+
+                myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
+                myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
+                var dot = new Dot(new Ellipse()
                 {
-                    //CreateDot(pixels);
-                }
+                    Height = 25,
+                    Width = 25,
+                    Fill = new SolidColorBrush(Color.FromRgb(100, (byte)random.Next(100, 256), 33))
+                }, "food")
+                { X = myCanvas.Height / 2, Y = myCanvas.Width / 2 };
+                targets.Add(dot.Id, dot);
+                myCanvas.Children.Add(dot.Show());
                 myTimer.Start();
             }
             catch (Exception)
@@ -360,6 +407,24 @@ namespace Neyron
                 MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        //private void addPixel_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        myTimer.Stop();
+
+        //        for (int i = 0; i < int.Parse(pixelCount.Text); i++)
+        //        {
+        //            //CreateDot(pixels);
+        //        }
+        //        myTimer.Start();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        //    }
+        //}
 
         //private void CreateDot(Dictionary<int, Pixel> pixels)
         //{

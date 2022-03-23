@@ -10,16 +10,18 @@ namespace Neyron.Objects
     {
         private static int GlobalId { get; set; }
         //public Vector3 Target { get; set; }
+        public string DotClass { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public Ellipse Form { get; set; }
         public int Id { get; set; }
 
-        public Dot(Ellipse form)
-        {
+        public Dot(Ellipse form, string dotClass)
+        {            
             GlobalId++;
             Id = GlobalId;
             Form = form;
+            DotClass = dotClass;
             X = 0;
             Y = 0;
         }
