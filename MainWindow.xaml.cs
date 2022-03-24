@@ -25,7 +25,7 @@ namespace Neyron
         Canvas myCanvas;
         Random random = new Random();
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        Topology Topology = new Topology(4, 2, 1, 1);
+        Topology Topology = new Topology(4, 1, 1, 1);
         NeuronNetwork NN;
         //MainController MN;
         //List<Tuple<double, double[]>> dataset;
@@ -280,19 +280,16 @@ namespace Neyron
 
                 foreach (var pixel in pixels.Values)
                 {
-                    var r = NN.FeedForward(new double[] { pixel.Position.X, pixel.Position.Y, target.Position.X, target.Position.Y });
-                    if (r[0].Output >= 0.5)
+                    var r = NN.FeedForward(new double[] { pixel.Position.X, pixel.Position.Y, target.Position.X - pixel.Position.X, target.Position.Y - pixel.Position.Y });
+                    if (r[0].Output <= 0.8)
                     {
-                        pixel.Y += r[0].Output * 10;
-                    }
-                    if (r[1].Output >= 0.5)
-                    {
-                        pixel.X -= r[0].Output * 10;
+                        pixel.Position -= target.Position;
+                        pixel.Move();
                     }
                     else
                     {
-                        pixel.X -= r[0].Output * 10;
-                        pixel.Y -= r[0].Output * 10;
+                        pixel.Position += target.Position;
+                        pixel.Move();
                     }
                 }
 
