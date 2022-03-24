@@ -6,11 +6,14 @@ using System.Windows.Shapes;
 
 namespace Neyron.Objects
 {
-    class Dot
+    public class Dot
     {
         private static int GlobalId { get; set; }
         //public Vector3 Target { get; set; }
         public string DotClass { get; set; }
+        public AI DotAI { get; set; }
+        public int Attack { get; set; }
+        public Vector2 Position { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public Ellipse Form { get; set; }
@@ -22,8 +25,13 @@ namespace Neyron.Objects
             Id = GlobalId;
             Form = form;
             DotClass = dotClass;
-            X = 0;
-            Y = 0;
+            Position = new Vector2((float)X, (float)Y);
+        }
+
+        public void Move()
+        {
+            X += Position.X;
+            Y += Position.Y;
         }
 
         public Ellipse Show()

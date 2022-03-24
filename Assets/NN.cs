@@ -19,13 +19,13 @@ public class NN
             {
                 for (int k = 0; k < nextSize; k++)
                 {
-                    layers[i].weights[j, k] = random.NextDouble();
+                    layers[i].weights[j, k] = (float)random.NextDouble();
                 }
             }
         }
     }
 
-    public double[] FeedForward(double[] inputs)
+    public float[] FeedForward(float[] inputs)
     {
         Array.Copy(inputs, 0, layers[0].neurons, 0, inputs.Length);
         for (int i = 1; i < layers.Length; i++)

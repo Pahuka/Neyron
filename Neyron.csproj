@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Assets\AI.cs" />
-    <Compile Remove="Assets\MainController.cs" />
+    <Compile Remove="Assets\Boid.cs" />
   </ItemGroup>
 
 </Project>
