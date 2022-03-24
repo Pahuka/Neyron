@@ -20,21 +20,32 @@ namespace Neyron.Brain
             CreateOutputLayer();
         }
 
-        //public double Learn(double[] expected, double[,] inputs, int epoch)
-        //{
-        //    var error = 0.0;
+        public double Learn(double[] expected, double[,] inputs, int epoch)
+        {
+            var error = 0.0;
+            for (int i = 0; i < epoch; i++)
+            {
+                for (int j = 0; j < expected.Length; j++)
+                {
+                    var output = expected[j];
+                    var input = GetRow(inputs, j);
 
-        //    for (int i = 0; i < expected.Length; i++)
-        //    {
-        //        var output = expected[i];
-        //        var input = inputs.Get
-        //        for (int j = 0; j < epoch; j++)
-        //        {
+                    error += Backpropagation(output, input);
+                }
+            }
 
-        //        }
-        //    }
+            var result = error / epoch;
+            return result;
+        }
 
-        //}
+        public static double[] GetRow(double[,] matrix, int row)
+        {
+            var columns = matrix.GetLength(1);
+            var array = new double[columns];
+            for (int i = 0; i < columns; ++i)
+                array[i] = matrix[row, i];
+            return array;
+        }
 
         private double[,] Scalling(double[,] inputs)
         {
@@ -93,45 +104,45 @@ namespace Neyron.Brain
             return result;
         }
 
-        public List<Neuron> FeedForward(params double[] inputSignals)
+        public Neuron FeedForward(params double[] inputSignals)
         {
             SendInputSignals(inputSignals);
             FeedForwardAllLayers();
 
             if (Topology.OutputCount == 1)
-                //return Layers
-                //    .Last().Neurons
-                //    .First();
-                return Layers.Last().Neurons;
+                return Layers
+                    .Last().Neurons
+                    .First();
+            //return Layers.Last().Neurons;
             else
-                //return Layers
-                //    .Last().Neurons
-                //    .OrderByDescending(x => x.Output)
-                //    .First();
-                return Layers.Last().Neurons;
+                return Layers
+                    .Last().Neurons
+                    .OrderByDescending(x => x.Output)
+                    .First();
+            //return Layers.Last().Neurons;
         }
 
-        public double Learn(List<Tuple<double, double[]>> dataset, int epoch)
-        {
-            var error = 0.0;
+        //public double Learn(List<Tuple<double, double[]>> dataset, int epoch)
+        //{
+        //    var error = 0.0;
 
-            for (int i = 0; i < epoch; i++)
-            {
-                foreach (var item in dataset)
-                {
-                    error += Backpropagation(item.Item1, item.Item2);
-                }
-            }
+        //    for (int i = 0; i < epoch; i++)
+        //    {
+        //        foreach (var item in dataset)
+        //        {
+        //            error += Backpropagation(item.Item1, item.Item2);
+        //        }
+        //    }
 
-            return error / epoch;
-        }
+        //    return error / epoch;
+        //}
 
         private double Backpropagation(double expected, params double[] inputs)
         {
             var actual = FeedForward(inputs);
-            var difference = actual.Last().Output - expected;
+            var difference = actual.Output - expected;
 
-            actual.Last().Learn(difference, Topology.LearningRate);
+            actual.Learn(difference, Topology.LearningRate);
 
             for (int i = Layers.Count - 2; i >= 0; i--)
             {

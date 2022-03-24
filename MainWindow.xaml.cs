@@ -25,7 +25,7 @@ namespace Neyron
         Canvas myCanvas;
         Random random = new Random();
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        Topology Topology = new Topology(4, 1, 1, 1);
+        Topology Topology = new Topology(5, 4, 0.1, 1);
         NeuronNetwork NN;
         //MainController MN;
         //List<Tuple<double, double[]>> dataset;
@@ -280,17 +280,18 @@ namespace Neyron
 
                 foreach (var pixel in pixels.Values)
                 {
-                    var r = NN.FeedForward(new double[] { pixel.Position.X, pixel.Position.Y, target.Position.X - pixel.Position.X, target.Position.Y - pixel.Position.Y });
-                    if (r[0].Output <= 0.8)
-                    {
-                        pixel.Position -= target.Position;
-                        pixel.Move();
-                    }
-                    else
-                    {
-                        pixel.Position += target.Position;
-                        pixel.Move();
-                    }
+                    var distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
+                    var neuron = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y, distance });
+                    var index = NN.Layers.Last().Neurons.IndexOf(neuron);
+                    if (index == 0)
+                        pixel.X -= (float)neuron.Output;
+                    if (index == 1)
+                        pixel.X += (float)neuron.Output;
+                    if (index == 2)
+                        pixel.Y -= (float)neuron.Output;
+                    if (index == 3)
+                        pixel.Y += (float)neuron.Output;
+                    
                 }
 
                 //pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
@@ -299,8 +300,6 @@ namespace Neyron
                 //CreateGrid(x, y);
                 foreach (var pixel in pixels)
                 {
-                    //Grid.SetColumn(pixel.Value.Clan, pixel.Value.X);
-                    //Grid.SetRow(pixel.Value.Clan, pixel.Value.Y);
                     Canvas.SetTop(pixel.Value.Show(), pixel.Value.X);
                     Canvas.SetLeft(pixel.Value.Show(), pixel.Value.Y);
                 }
@@ -327,20 +326,23 @@ namespace Neyron
                     throw new ArgumentException();
                 myTimer.Stop();
                 pixels.Clear();
+                targets.Clear();
+                myCanvas.Children.Clear();
                 myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
                 myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
-                var dot = new Dot(new Ellipse()
-                {
-                    Height = 25,
-                    Width = 25,
-                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
-                }, "")
-                { Position = new Vector2(random.Next(0, (int)myCanvas.Height), random.Next(0, (int)myCanvas.Width)) };
-                dot.Move();
-                pixels.Add(dot.Id, dot);
-                Canvas.SetTop(dot.Show(), dot.X);
-                Canvas.SetLeft(dot.Show(), dot.Y);
-                myCanvas.Children.Add(dot.Show());
+
+                //var dot = new Dot(new Ellipse()
+                //{
+                //    Height = 25,
+                //    Width = 25,
+                //    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
+                //}, "")
+                //{ Position = new Vector2(random.Next(0, (int)myCanvas.Height), random.Next(0, (int)myCanvas.Width)) };
+                //dot.Move();
+                //pixels.Add(dot.Id, dot);
+                //Canvas.SetTop(dot.Show(), dot.X);
+                //Canvas.SetLeft(dot.Show(), dot.Y);
+                //myCanvas.Children.Add(dot.Show());
 
                 //myTimer.Start();
             }
@@ -367,17 +369,30 @@ namespace Neyron
                 {
                     Height = 25,
                     Width = 25,
-                    Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0))
+                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 0))
                 }, "food")
                 { Position = new Vector2(random.Next(0, (int)myCanvas.Height), random.Next(0, (int)myCanvas.Width)) };
                 dot.Move();
-                targets.Add(dot.Id, dot);
+                pixels.Add(dot.Id, dot);
                 Canvas.SetTop(dot.Show(), dot.X);
                 Canvas.SetLeft(dot.Show(), dot.Y);
                 myCanvas.Children.Add(dot.Show());
 
-                //MN.CreateDots(int.Parse(pixelCount.Text));
+                var food = new Dot(new Ellipse()
+                {
+                    Height = 25,
+                    Width = 25,
+                    Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0))
+                }, "food")
+                { Position = new Vector2(random.Next(0, (int)myCanvas.Height), random.Next(0, (int)myCanvas.Width)) };
+                food.Move();
+                targets.Add(food.Id, food);
+                Canvas.SetTop(food.Show(), food.X);
+                Canvas.SetLeft(food.Show(), food.Y);
+                myCanvas.Children.Add(food.Show());
 
+                //MN.CreateDots(int.Parse(pixelCount.Text));
+                NN.Learn(new double[] { 0.0, 1.0 }, new double[,] { { 1.0, 1.0, 2.0, 2.0, 1.0 }, { 2.0, 2.0, 2.0, 2.0, 0.0 } }, 100);
                 myTimer.Start();
             }
             catch (Exception)
