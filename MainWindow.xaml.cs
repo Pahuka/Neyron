@@ -25,9 +25,9 @@ namespace Neyron
         Canvas myCanvas;
         Random random = new Random();
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        //Topology Topology = new Topology(5, 2, 1, 1);
-        //NeuronNetwork NN;
-        MainController MN;
+        Topology Topology = new Topology(4, 2, 1, 1);
+        NeuronNetwork NN;
+        //MainController MN;
         //List<Tuple<double, double[]>> dataset;
 
         public MainWindow()
@@ -38,13 +38,13 @@ namespace Neyron
             Grid.SetColumn(myCanvas, 0);
             Grid.SetRow(myCanvas, 1);
             mainGrid.Children.Add(myCanvas);
-            MN = new MainController(myCanvas, pixels, targets);
-            //NN = new NeuronNetwork(Topology);
+            //MN = new MainController(myCanvas, pixels, targets);
+            NN = new NeuronNetwork(Topology);
             //NN.Learn(dataset, 1000);
 
             //addPixel.IsEnabled = false;
-            //myTimer.Tick += Move;
-            myTimer.Tick += MN.Evolution;
+            myTimer.Tick += Move;
+            //myTimer.Tick += MN.Evolution;
             myTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(speed.Text));
         }
 
@@ -266,85 +266,84 @@ namespace Neyron
         //    }
         //}
 
-        //private void Move(object o, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        var random = new Random();
-        //        var x = int.Parse(sizeX.Text);
-        //        var y = int.Parse(sizeY.Text);
-        //        var target = targets.Values.FirstOrDefault();
-        //        //var inputSignals = new double[pixels.Count];
-        //        if (x > 100 || y > 100)
-        //            throw new ArgumentException();
+        private void Move(object o, EventArgs e)
+        {
+            try
+            {
+                var random = new Random();
+                var x = int.Parse(sizeX.Text);
+                var y = int.Parse(sizeY.Text);
+                var target = targets.Values.FirstOrDefault();
+                //var inputSignals = new double[pixels.Count];
+                if (x > 100 || y > 100)
+                    throw new ArgumentException();
 
-        //        foreach (var pixel in pixels.Values)
-        //        {
-        //            var r = NN.FeedForward(new float[] { pixel.Position.X, pixel.Position.Y, target.Position.X, target.Position.Y });
-        //            if (r[0] >= 0.5)
-        //            {
-        //                pixel.X += r[0] * 10;
-        //                //pixel.Y += r[0].Output * 10;
-        //            }
-        //            if (r[1] >= 0.5)
-        //            {
-        //                pixel.Y += r[0] * 10;
-        //                //pixel.X -= r[0].Output * 10;
-        //            }
-        //            else
-        //            {
-        //                pixel.X -= r[0] * 10;
-        //                pixel.Y -= r[0] * 10;
-        //            }
-        //        }
+                foreach (var pixel in pixels.Values)
+                {
+                    var r = NN.FeedForward(new double[] { pixel.Position.X, pixel.Position.Y, target.Position.X, target.Position.Y });
+                    if (r[0].Output >= 0.5)
+                    {
+                        pixel.Y += r[0].Output * 10;
+                    }
+                    if (r[1].Output >= 0.5)
+                    {
+                        pixel.X -= r[0].Output * 10;
+                    }
+                    else
+                    {
+                        pixel.X -= r[0].Output * 10;
+                        pixel.Y -= r[0].Output * 10;
+                    }
+                }
 
-        //        //pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
-        //        //subPixels.Clear();
+                //pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
+                //subPixels.Clear();
 
-        //        //CreateGrid(x, y);
-        //        foreach (var pixel in pixels)
-        //        {
-        //            //Grid.SetColumn(pixel.Value.Clan, pixel.Value.X);
-        //            //Grid.SetRow(pixel.Value.Clan, pixel.Value.Y);
-        //            Canvas.SetTop(pixel.Value.Show(), pixel.Value.X);
-        //            Canvas.SetLeft(pixel.Value.Show(), pixel.Value.Y);
-        //        }
-        //    }
-        //    catch (ArgumentException)
-        //    {
-        //        MessageBox.Show("Указан слишком большой размер поля, вводите не больше 100 по оси X или Y", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        //        myTimer.Stop();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        MessageBox.Show("Вводите координаты X и Y только в виде целых чисел", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        //        myTimer.Stop();
-        //    }
-        //}
+                //CreateGrid(x, y);
+                foreach (var pixel in pixels)
+                {
+                    //Grid.SetColumn(pixel.Value.Clan, pixel.Value.X);
+                    //Grid.SetRow(pixel.Value.Clan, pixel.Value.Y);
+                    Canvas.SetTop(pixel.Value.Show(), pixel.Value.X);
+                    Canvas.SetLeft(pixel.Value.Show(), pixel.Value.Y);
+                }
+            }
+            catch (ArgumentException)
+            {
+                MessageBox.Show("Указан слишком большой размер поля, вводите не больше 100 по оси X или Y", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                myTimer.Stop();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Вводите координаты X и Y только в виде целых чисел", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                myTimer.Stop();
+            }
+        }
 
         private void sizeButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                //var x = int.Parse(sizeX.Text);
-                //var y = int.Parse(sizeY.Text);
-                //if (x > 100 || y > 100)
-                //    throw new ArgumentException();
+                var x = int.Parse(sizeX.Text);
+                var y = int.Parse(sizeY.Text);
+                if (x > 100 || y > 100)
+                    throw new ArgumentException();
                 myTimer.Stop();
                 pixels.Clear();
                 myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
                 myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
-                //var dot = new Dot(new Ellipse()
-                //{
-                //    Height = 25,
-                //    Width = 25,
-                //    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
-                //}, "")
-                //{ X = random.Next(0, (int)myCanvas.Height), Y = random.Next(0, (int)myCanvas.Width) };
-                //pixels.Add(dot.Id, dot);
-                //Canvas.SetTop(dot.Show(), dot.X);
-                //Canvas.SetLeft(dot.Show(), dot.Y);
-                //myCanvas.Children.Add(dot.Show());
+                var dot = new Dot(new Ellipse()
+                {
+                    Height = 25,
+                    Width = 25,
+                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 33))
+                }, "")
+                { Position = new Vector2(random.Next(0, (int)myCanvas.Height), random.Next(0, (int)myCanvas.Width)) };
+                dot.Move();
+                pixels.Add(dot.Id, dot);
+                Canvas.SetTop(dot.Show(), dot.X);
+                Canvas.SetLeft(dot.Show(), dot.Y);
+                myCanvas.Children.Add(dot.Show());
 
                 //myTimer.Start();
             }
@@ -380,7 +379,7 @@ namespace Neyron
                 Canvas.SetLeft(dot.Show(), dot.Y);
                 myCanvas.Children.Add(dot.Show());
 
-                MN.CreateDots(int.Parse(pixelCount.Text));
+                //MN.CreateDots(int.Parse(pixelCount.Text));
 
                 myTimer.Start();
             }
