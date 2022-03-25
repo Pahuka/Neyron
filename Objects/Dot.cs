@@ -11,11 +11,11 @@ namespace Neyron.Objects
         private static int GlobalId { get; set; }
         //public Vector3 Target { get; set; }
         public string DotClass { get; set; }
-        public AI DotAI { get; set; }
+        //public AI DotAI { get; set; }
         public int Attack { get; set; }
-        public Vector2 Position { get; set; }
-        public float X { get; set; }
-        public float Y { get; set; }
+        //public Vector2 Position { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
         public Ellipse Form { get; set; }
         public int Id { get; set; }
 
@@ -25,14 +25,14 @@ namespace Neyron.Objects
             Id = GlobalId;
             Form = form;
             DotClass = dotClass;
-            Position = new Vector2(X, Y);
+            //Position = new Vector2(X, Y);
         }
 
-        public void Move()
-        {
-            X += Position.X;
-            Y += Position.Y;
-        }
+        //public void Move()
+        //{
+        //    X += Position.X;
+        //    Y += Position.Y;
+        //}
 
         public Ellipse Show()
         {

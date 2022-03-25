@@ -23,12 +23,13 @@ namespace Neyron
 
         private void InitWeights(int inputCount)
         {
+            var random = new Random();
             for (int i = 0; i < inputCount; i++)
             {
                 if (NType == NeuronType.Input)
                     Weights.Add(1);
                 else
-                    Weights.Add(new Random().NextDouble());
+                    Weights.Add(random.NextDouble());
                 Inputs.Add(0);
             }
         }
@@ -39,8 +40,12 @@ namespace Neyron
 
             for (int i = 0; i < inputs.Count; i++)
             {
+                Inputs[i] = inputs[i];
+            }
+
+            for (int i = 0; i < inputs.Count; i++)
+            {
                 sum += inputs[i] * Weights[i];
-                Inputs.Add(inputs[i]);
             }
 
             if (NType != NeuronType.Input)

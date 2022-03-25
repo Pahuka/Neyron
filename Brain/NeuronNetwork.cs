@@ -47,7 +47,7 @@ namespace Neyron.Brain
             return array;
         }
 
-        private double[,] Scalling(double[,] inputs)
+        public double[,] Scalling(double[,] inputs)
         {
             var result = new double[inputs.GetLength(0), inputs.GetLength(1)];
             for (int column = 0; column < inputs.GetLength(1); column++)
@@ -73,26 +73,26 @@ namespace Neyron.Brain
             return result;
         }
 
-        private double[,] Normalization(double[,] inputs)
+        public double[,] Normalization(double[,] inputs)
         {
             var result = new double[inputs.GetLength(0), inputs.GetLength(1)];
 
             for (int column = 0; column < inputs.GetLength(1); column++)
             {
                 var sum = 0.0;
-                var average = sum / inputs.GetLength(0);
-                var error = 0.0;
-                var stdError = Math.Sqrt(error / inputs.GetLength(0));
 
                 for (int row = 0; row < inputs.GetLength(0); row++)
                 {
                     sum += inputs[row, column];
                 }
+                var average = sum / inputs.GetLength(0);
 
+                var error = 0.0;
                 for (int row = 0; row < inputs.GetLength(0); row++)
                 {
                     error += Math.Pow((inputs[row, column] - average), 2);
                 }
+                var stdError = Math.Sqrt(error / inputs.GetLength(0));
 
 
                 for (int row = 0; row < inputs.GetLength(0); row++)
@@ -139,10 +139,13 @@ namespace Neyron.Brain
 
         private double Backpropagation(double expected, params double[] inputs)
         {
-            var actual = FeedForward(inputs);
-            var difference = actual.Output - expected;
+            var actual = FeedForward(inputs).Output;
+            var difference = actual - expected;
 
-            actual.Learn(difference, Topology.LearningRate);
+            foreach (var item in Layers.Last().Neurons)
+            {
+                item.Learn(difference, Topology.LearningRate);
+            }
 
             for (int i = Layers.Count - 2; i >= 0; i--)
             {
@@ -182,7 +185,7 @@ namespace Neyron.Brain
             for (int i = 0; i < inputSignals.Length; i++)
             {
                 var signal = new List<double>() { inputSignals[i] };
-                var neuron = Layers.First().Neurons.First();
+                var neuron = Layers[0].Neurons[i];
                 neuron.FeedForward(signal);
             }
         }
