@@ -400,7 +400,7 @@ namespace Neyron
                 myCanvas.Children.Add(food.Show());
 
                 //MN.CreateDots(int.Parse(pixelCount.Text));
-                //var dif = NN.Learn(new double[] { 0, 1, 0, 1 }, new double[,] { { 0, 0, 0, 0, 0 }, { 1, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 0, 0, 0, 1, 1 } }, 10000);
+                var dif = NN.Learn(new double[] { 1 }, new double[,] { { 0, 0, 0, 0, 0 } }, 100000);
                 
                 myTimer.Start();
             }
