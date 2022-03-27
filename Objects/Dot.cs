@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Neyron.Brain;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
@@ -11,7 +12,7 @@ namespace Neyron.Objects
         private static int GlobalId { get; set; }
         //public Vector3 Target { get; set; }
         public string DotClass { get; set; }
-        //public AI DotAI { get; set; }
+        public NeuronNetwork Brain { get; set; }
         public int Attack { get; set; }
         //public Vector2 Position { get; set; }
         public double X { get; set; }
@@ -19,13 +20,13 @@ namespace Neyron.Objects
         public Ellipse Form { get; set; }
         public int Id { get; set; }
 
-        public Dot(Ellipse form, string dotClass)
+        public Dot(Ellipse form, string dotClass, NeuronNetwork brain)
         {            
             GlobalId++;
             Id = GlobalId;
             Form = form;
             DotClass = dotClass;
-            //Position = new Vector2(X, Y);
+            Brain = brain;
         }
 
         //public void Move()

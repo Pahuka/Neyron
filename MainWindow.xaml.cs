@@ -1,4 +1,5 @@
 ﻿using Neyron.Brain;
+using Neyron.GNN;
 using Neyron.Objects;
 using System;
 using System.Collections.Generic;
@@ -25,21 +26,22 @@ namespace Neyron
         Canvas myCanvas;
         Random random = new Random();
         System.Windows.Threading.DispatcherTimer myTimer = new System.Windows.Threading.DispatcherTimer();
-        Topology Topology = new Topology(5, 4, 0.1, 2);
+        Topology Topology = new Topology(3, 2, 0.1, 4);
         NeuronNetwork NN;
+        //BloopBrain brain = new BloopBrain();
         //NN AI;
         //List<Tuple<double, double[]>> dataset;
 
         public MainWindow()
         {
             InitializeComponent();
-
+            //brain.GenerationRandomBrain();
             myCanvas = new Canvas();
             Grid.SetColumn(myCanvas, 0);
             Grid.SetRow(myCanvas, 1);
             mainGrid.Children.Add(myCanvas);
             //MN = new MainController(myCanvas, pixels, targets);
-            NN = new NeuronNetwork(Topology);
+            //NN = new NeuronNetwork(Topology);
             //AI = new NN(5, 8, 4);
 
             //addPixel.IsEnabled = false;
@@ -157,22 +159,22 @@ namespace Neyron
         //        }
         //}
 
-        private void Fight(Pixel pixel1, Pixel pixel2)
-        {
-            if (pixel1.Id != pixel2.Id)
-            {
-                if (pixel1.Healh + pixel1.Attack > pixel2.Healh + pixel2.Attack)
-                {
-                    pixel1.Healh -= pixel2.Attack;
-                    pixel2.Healh -= pixel1.Attack;
-                }
-                else
-                {
-                    pixel2.Healh -= pixel1.Attack;
-                    pixel1.Healh -= pixel2.Attack;
-                }
-            }
-        }
+        //private void Fight(Pixel pixel1, Pixel pixel2)
+        //{
+        //    if (pixel1.Id != pixel2.Id)
+        //    {
+        //        if (pixel1.Healh + pixel1.Attack > pixel2.Healh + pixel2.Attack)
+        //        {
+        //            pixel1.Healh -= pixel2.Attack;
+        //            pixel2.Healh -= pixel1.Attack;
+        //        }
+        //        else
+        //        {
+        //            pixel2.Healh -= pixel1.Attack;
+        //            pixel1.Healh -= pixel2.Attack;
+        //        }
+        //    }
+        //}
 
         //private void CalculateMove(Pixel pixel)
         //{
@@ -280,24 +282,43 @@ namespace Neyron
 
                 foreach (var pixel in pixels.Values)
                 {
-                    var distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
                     //var norm = NN.Normalization(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
                     //var scal = NN.Scalling(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
                     //var learnRs = NN.Learn(new double[] { 0 }, new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } }, 100);
-                    var neuron = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y, distance });
+                    //var neuron = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y, distance });
                     //var neuron = AI.FeedForward(new float[] { 0.1f, (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble() });
+                    var distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
+                    //var res = pixel.Brain.Learn(new double[] { distance }, new double[,] { { pixel.X, pixel.Y } }, 10);
+                    var neuron = pixel.Brain.FeedForward(new double[] { pixel.X, pixel.Y, distance });
 
-                    var index = NN.Layers.Last().Neurons.IndexOf(neuron);
-                    if (index == 0)
-                        pixel.X -= 5;
-                    if (index == 1)
+                    //brain.inputLayers[0] = (float)pixel.X;
+                    //brain.inputLayers[1] = (float)pixel.Y;
+                    //brain.inputLayers[2] = (float)distance;
+                    //brain.ping();
+                    //var output = brain.outputLayers[0];
+                    //if (output < 0)
+                    //{
+                    //    pixel.X -= output;
+                    //    pixel.Y += output;
+                    //}
+                    //else
+                    //{
+                    //    pixel.X += output;
+                    //    pixel.Y -= output;
+                    //}
+                    //brain.fitness = myTimer.Interval.Ticks;
+
+                    var index = pixel.Brain.Layers.Last().Neurons.IndexOf(neuron);
+                    if (index == 0 && Math.Round(neuron.Output) == 1)
                         pixel.X += 5;
-                    if (index == 2)
-                        pixel.Y -= 5;
-                    if (index == 3)
+                    if (index == 0 && Math.Round(neuron.Output) == 0)
+                        pixel.X -= 5;
+                    if (index == 1 && Math.Round(neuron.Output) == 1)
                         pixel.Y += 5;
-                    //distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
-                    
+                    if (index == 1 && Math.Round(neuron.Output) == 0)
+                        pixel.Y -= 5;
+
+                    pixel.Brain.Learn(new double[] { distance }, new double[,] { { pixel.X, pixel.Y, distance } }, 10);
                     //pixel.X += random.Next(-5, 6);
                     //pixel.Y += random.Next(-5, 6);
                 }
@@ -378,7 +399,7 @@ namespace Neyron
                     Height = 25,
                     Width = 25,
                     Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 0))
-                }, "")
+                }, "", new NeuronNetwork(Topology))
                 { X = random.Next(0, (int)myCanvas.Height), Y = random.Next(0, (int)myCanvas.Width) };
                 //dot.Move();
                 pixels.Add(dot.Id, dot);
@@ -391,16 +412,16 @@ namespace Neyron
                     Height = 25,
                     Width = 25,
                     Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0))
-                }, "food")
+                }, "food", null)
                 { X = random.Next(0, (int)myCanvas.Height), Y = random.Next(0, (int)myCanvas.Width) };
                 //food.Move();
                 targets.Add(food.Id, food);
                 Canvas.SetTop(food.Show(), food.Y);
                 Canvas.SetLeft(food.Show(), food.X);
-                myCanvas.Children.Add(food.Show());
+                myCanvas.Children.Add(food.Show());                
 
                 //MN.CreateDots(int.Parse(pixelCount.Text));
-                var dif = NN.Learn(new double[] { 1 }, new double[,] { { 0, 0, 0, 0, 0 } }, 100000);
+                //var dif = NN.Learn(new double[] { 1 }, new double[,] { { 0, 0, 0, 0, 0 } }, 100000);
                 
                 myTimer.Start();
             }
