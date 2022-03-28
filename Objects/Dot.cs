@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using System.Windows;
 using System.Windows.Shapes;
 
 namespace Neyron.Objects
@@ -14,30 +15,35 @@ namespace Neyron.Objects
         //public Vector3 Target { get; set; }
         public string DotClass { get; set; }
         //public NeuronNetwork Brain { get; set; }
-        public BloopBrain Brain { get; set; }
-        public int Attack { get; set; }
+        public NeuronNetwork Brain { get; set; }
+        public int Score { get; set; }
         //public Vector2 Position { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
-        public Ellipse Form { get; set; }
+        public Rectangle Form { get; set; }
+        public Rect RectForm { get; set; }
         public int Id { get; set; }
 
-        public Dot(Ellipse form, string dotClass, BloopBrain brain)
+        public Dot(Rectangle form, string dotClass, NeuronNetwork brain)
         {            
             GlobalId++;
             Id = GlobalId;
             Form = form;
             DotClass = dotClass;
             Brain = brain;
+            var point = new Point(X, Y);
+            var size = new Size(form.Height, form.Width);
+            RectForm = new Rect(point, size);
         }
 
-        //public void Move()
-        //{
-        //    X += Position.X;
-        //    Y += Position.Y;
-        //}
+        public void Move()
+        {
+            var point = new Point(X, Y);
+            var size = new Size(Form.Height, Form.Width);
+            RectForm = new Rect(point, size);
+        }
 
-        public Ellipse Show()
+        public Rectangle Show()
         {
             return Form;
         }

@@ -11,8 +11,8 @@ namespace Neyron.GNN
         public float[,] inputWeights, hiddenWeights;
         private Random random = new Random();
 
-        int numberOfInputs = 3;
-        int numberOfHidden = 4;
+        int numberOfInputs = 4;
+        int numberOfHidden = 16;
         int numberOfOutputs = 4;
         public float fitness = 0;
         public BloopBrain()
@@ -70,7 +70,7 @@ namespace Neyron.GNN
 
         }
 
-        public float tanh(float x)
+        private float tanh(float x)
         {
             if (x > 20f)
                 return 1;
