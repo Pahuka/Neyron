@@ -18,7 +18,7 @@
         <TextBox x:Name="sizeX" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="14,0,0,0" UseLayoutRounding="False" Cursor="" Text="10" MaxLength="3" MaxLines="1" ToolTip="Максимальное значение 100"/>
         <TextBox x:Name="sizeY" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="69,0,0,0" UseLayoutRounding="False" Cursor="" Text="10" MaxLength="3" MaxLines="1" ToolTip="Максимальное значение 100"/>
         <TextBox x:Name="speed" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="116,0,0,0" UseLayoutRounding="False" Text="50" TextChanged="speed_TextChanged" ToolTip="Скорость" MaxLines="1"/>
-        <TextBox x:Name="pixelCount" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" UseLayoutRounding="False" Text="50" ToolTip="Количество точек" Margin="280,0,0,0" MaxLength="3" MaxLines="1"/>
+        <TextBox x:Name="pixelCount" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" UseLayoutRounding="False" Text="50" ToolTip="Количество точек" Margin="280,0,0,0" MaxLength="3" MaxLines="1" IsEnabled="False"/>
         <Label Content="X" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" FontWeight="Bold"/>
         <Label Content="Y" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="55,0,0,0" FontWeight="Bold"/>
         <Button x:Name="sizeButton" Grid.Row="0" Content="Обновить поле" HorizontalAlignment="Left" Click="sizeButton_Click" Height="22" Width="100" Margin="332,2,0,1"/>
