@@ -19,6 +19,7 @@ namespace Neyron.Objects
         public BloopBrain Brain { get; set; }
         public int Score { get; set; }
         //public Vector2 Position { get; set; }
+        public int Health { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public Shape Form { get; set; }
@@ -32,6 +33,7 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
+            Health = 30000;
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
             //RectForm = new Rect();

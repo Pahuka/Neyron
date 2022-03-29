@@ -12,7 +12,7 @@ namespace Neyron.GNN
         private Random random = new Random();
 
         int numberOfInputs = 4;
-        int numberOfHidden = 16;
+        int numberOfHidden = 8;
         int numberOfOutputs = 4;
         public float fitness = 0;
         public BloopBrain()

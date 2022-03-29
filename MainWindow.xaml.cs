@@ -285,104 +285,135 @@ namespace Neyron
                 var random = new Random();
                 //var x = int.Parse(sizeX.Text);
                 //var y = int.Parse(sizeY.Text);
-                var target = targets.Values.FirstOrDefault();
+                //var target = targets.Values.FirstOrDefault();
                 //var inputSignals = new double[pixels.Count];
                 //if (x > 100 || y > 100)
                 //    throw new ArgumentException();
 
-                foreach (var pixel in pixels.Values)
+                if (tick % 1000 == 0 & pixels.Where(x => x.Value.Health > 0 & x.Value.Score >= 1000).Count() >= 2)
                 {
-                    if (tick % 100 == 0)
-                        pixel.Brain.Mutate();
-                    //var norm = NN.Normalization(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
-                    //var scal = NN.Scalling(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
-                    //var learnRs = NN.Learn(new double[] { 0 }, new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } }, 100);
-                    //var neuron = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y, distance });
-                    //var neuron = AI.FeedForward(new float[] { 0.1f, (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble() });
-                    var distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
-                    //var res = pixel.Brain.Learn(new double[] { distance }, new double[,] { { pixel.X, pixel.Y } }, 10);
-                    //var neuron = pixel.Brain.FeedForward(new double[] { pixel.X, pixel.Y, distance, pixel.Score });
-
-                    pixel.Brain.inputLayers[0] = (float)pixel.X;
-                    pixel.Brain.inputLayers[1] = (float)pixel.Y;
-                    pixel.Brain.inputLayers[2] = (float)distance;
-                    pixel.Brain.inputLayers[3] = (float)pixel.Score;
-                    pixel.Brain.ping();
-
-                    //var result = pixel.Brain.FeedForward(new float[] { (float)pixel.X, (float)pixel.Y, (float)distance });
-
-                    for (int i = 0; i < pixel.Brain.outputLayers.Length; i++)
-                    {
-                        if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
-                        {
-                            if (i == 0)
-                            {
-                                var step = GenerateStep(pixel, 1, 0);
-                                pixel.X = step.Item1;
-                            }
-                            if (i == 1)
-                            {
-                                var step = GenerateStep(pixel, -1, 0);
-                                pixel.X = step.Item1;
-                            }
-                            if (i == 2)
-                            {
-                                var step = GenerateStep(pixel, 0, 1);
-                                pixel.Y = step.Item2;
-                            }
-                            if (i == 3)
-                            {
-                                var step = GenerateStep(pixel, 0, -1);
-                                pixel.Y = step.Item2;
-                            }
-                        }
-                        Canvas.SetTop(pixel.Show(), pixel.Y);
-                        Canvas.SetLeft(pixel.Show(), pixel.X);
-                        pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), pixel.Show().Width, pixel.Show().Height);
-                        if (pixel.RectForm.IntersectsWith(target.RectForm))
-                        {
-                            pixel.Score++;
-                            pixel.Show().ToolTip = ToolTip = new ToolTip() { Content = $"{pixel.Score}" };
-                            var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
-                            pixel.Brain.fitness = (float)(distance - newDistance);
-                        }
-                    }
-
-                    //if (newDistance == distance)
-                    //    pixel.Brain.fitness++;
-
-                    //var index = pixel.Brain.Layers.Last().Neurons.IndexOf(neuron);
-                    //if (index == 0)
-                    //{
-                    //    var step = GenerateStep(pixel, 1, 0);
-                    //    pixel.X = step.Item1;
-                    //}
-                    //if (index == 1)
-                    //{
-                    //    var step = GenerateStep(pixel, -1, 0);
-                    //    pixel.X = step.Item1;
-                    //}
-                    //if (index == 2)
-                    //{
-                    //    var step = GenerateStep(pixel, 0, 1);
-                    //    pixel.Y = step.Item2;
-                    //}
-                    //if (index == 3)
-                    //{
-                    //    var step = GenerateStep(pixel, 0, -1);
-                    //    pixel.Y = step.Item2;
-                    //}
-                    //pixel.Move();
-                    //pixel.RectForm = new Rect(pixel.X, pixel.Y, 25, 25);
-                    //if (pixel.RectForm.IntersectsWith(target.RectForm))
-                    //    pixel.Score++;
-
-                    //var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
-                    //if (newDistance > distance)
-                    //    pixel.Brain.Learn(new double[] { 0 }, new double[,] { { pixel.X, pixel.Y, newDistance, pixel.Score } }, 1);
-                    //else
-                    //    pixel.Brain.Learn(new double[] { 1 }, new double[,] { { pixel.X, pixel.Y, newDistance, pixel.Score } }, 1);                    
+                    var parents = pixels
+                        .OrderByDescending(x => x.Value.Score)
+                        .Where(x => x.Value.Health > 0)
+                        .Take(2)
+                        .Select(x => x.Value)
+                        .ToList();
+                    var result = parents[0].Brain.Crossover(parents[1].Brain);
+                    bornDots(result);
                 }
+
+                foreach (var pixel in pixels.Values.Where(x => x.Health > 0))
+                {
+                    if (tick % 500 == 0)
+                        pixel.Brain.Mutate();
+
+                    foreach (var target in targets.Values)
+                    {
+                        //var norm = NN.Normalization(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
+                        //var scal = NN.Scalling(new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } });
+                        //var learnRs = NN.Learn(new double[] { 0 }, new double[,] { { pixel.X, pixel.Y, target.X, target.Y, distance } }, 100);
+                        //var neuron = NN.FeedForward(new double[] { pixel.X, pixel.Y, target.X, target.Y, distance });
+                        //var neuron = AI.FeedForward(new float[] { 0.1f, (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble() });
+                        var distance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
+                        //var res = pixel.Brain.Learn(new double[] { distance }, new double[,] { { pixel.X, pixel.Y } }, 10);
+                        //var neuron = pixel.Brain.FeedForward(new double[] { pixel.X, pixel.Y, distance, pixel.Score });
+
+                        pixel.Brain.inputLayers[0] = (float)pixel.X;
+                        pixel.Brain.inputLayers[1] = (float)pixel.Y;
+                        pixel.Brain.inputLayers[2] = (float)distance;
+                        pixel.Brain.inputLayers[3] = pixel.Brain.fitness;
+                        //pixel.Brain.inputLayers[3] = pixel.Score;
+                        pixel.Brain.ping();
+
+                        //var result = pixel.Brain.FeedForward(new float[] { (float)pixel.X, (float)pixel.Y, (float)distance });
+
+                        for (int i = 0; i < pixel.Brain.outputLayers.Length; i++)
+                        {
+                            if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                            {
+                                if (i == 0)
+                                {
+                                    var step = GenerateStep(pixel, 1, 0);
+                                    pixel.X = step.Item1;
+                                }
+                                if (i == 1)
+                                {
+                                    var step = GenerateStep(pixel, -1, 0);
+                                    pixel.X = step.Item1;
+                                }
+                                if (i == 2)
+                                {
+                                    var step = GenerateStep(pixel, 0, 1);
+                                    pixel.Y = step.Item2;
+                                }
+                                if (i == 3)
+                                {
+                                    var step = GenerateStep(pixel, 0, -1);
+                                    pixel.Y = step.Item2;
+                                }
+                            }
+                            Canvas.SetTop(pixel.Show(), pixel.Y);
+                            Canvas.SetLeft(pixel.Show(), pixel.X);
+                            pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), pixel.Show().Width, pixel.Show().Height);
+                            if (pixel.RectForm.IntersectsWith(target.RectForm))
+                            {
+                                target.Show().Stroke = Brushes.Black;
+                                pixel.Health += 100;
+                                pixel.Score++;
+                                pixel.Show().ToolTip = ToolTip = new ToolTip() { Content = $"{pixel.Score}" };
+                                var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
+                                if(newDistance <= distance)
+                                    pixel.Brain.fitness += 0.1f;
+                            }
+                            pixel.Health--;
+                            if (pixel.Health <= 0)
+                                pixel.Show().Fill = Brushes.Black;
+                        }
+                        target.Show().Stroke = Brushes.White;
+                    }
+                }
+                var deads = pixels.Values.Where(x => x.Health <= 0).Select(x => x.Id);
+                foreach (var key in deads)
+                {
+                    myCanvas.Children.Remove(pixels[key].Show());
+                    pixels.Remove(key);
+                }
+                #region
+                //if (newDistance == distance)
+                //    pixel.Brain.fitness++;
+
+                //var index = pixel.Brain.Layers.Last().Neurons.IndexOf(neuron);
+                //if (index == 0)
+                //{
+                //    var step = GenerateStep(pixel, 1, 0);
+                //    pixel.X = step.Item1;
+                //}
+                //if (index == 1)
+                //{
+                //    var step = GenerateStep(pixel, -1, 0);
+                //    pixel.X = step.Item1;
+                //}
+                //if (index == 2)
+                //{
+                //    var step = GenerateStep(pixel, 0, 1);
+                //    pixel.Y = step.Item2;
+                //}
+                //if (index == 3)
+                //{
+                //    var step = GenerateStep(pixel, 0, -1);
+                //    pixel.Y = step.Item2;
+                //}
+                //pixel.Move();
+                //pixel.RectForm = new Rect(pixel.X, pixel.Y, 25, 25);
+                //if (pixel.RectForm.IntersectsWith(target.RectForm))
+                //    pixel.Score++;
+
+                //var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
+                //if (newDistance > distance)
+                //    pixel.Brain.Learn(new double[] { 0 }, new double[,] { { pixel.X, pixel.Y, newDistance, pixel.Score } }, 1);
+                //else
+                //    pixel.Brain.Learn(new double[] { 1 }, new double[,] { { pixel.X, pixel.Y, newDistance, pixel.Score } }, 1);
+                #endregion
 
                 //pixels = pixels.Concat(subPixels).ToDictionary(x => x.Key, x => x.Value);
                 //subPixels.Clear();
@@ -414,6 +445,7 @@ namespace Neyron
                 //var y = int.Parse(sizeY.Text);
                 //if (x > 100 || y > 100)
                 //    throw new ArgumentException();
+                tick = 0;
                 myTimer.Stop();
                 pixels.Clear();
                 targets.Clear();
@@ -438,41 +470,25 @@ namespace Neyron
                 myTimer.Stop();
                 //myCanvas.Width = mainGrid.RowDefinitions[1].ActualHeight;
                 //myCanvas.Height = mainGrid.ColumnDefinitions[0].ActualWidth;
-                var brain = new BloopBrain();                
-                brain.GenerationRandomBrain();
-                var dot = new Dot(new Rectangle()
+                var dotCount = int.Parse(sizeX.Text);
+                for (int i = 0; i < dotCount; i++)
                 {
-                    Height = 25,
-                    Width = 25,
-                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 0))                    
-                }, "", brain)
-                { X = random.Next(0, (int)myCanvas.ActualHeight), Y = random.Next(0, (int)myCanvas.ActualWidth) };
-                //dot.Move();
-                
-                pixels.Add(dot.Id, dot);
-                Canvas.SetTop(dot.Show(), dot.Y);
-                Canvas.SetLeft(dot.Show(), dot.X);
-                myCanvas.Children.Add(dot.Show());
-
-                if (targets.Count == 0)
-                {
-                    var food = new Dot(new Rectangle()
+                    var brain = new BloopBrain();
+                    brain.GenerationRandomBrain();
+                    var dot = new Dot(new Rectangle()
                     {
                         Height = 25,
                         Width = 25,
-                        Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0))
-                    }, "food", null)
+                        Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 0))
+                    }, "", brain)
                     { X = random.Next(0, (int)myCanvas.ActualHeight), Y = random.Next(0, (int)myCanvas.ActualWidth) };
-                    //food.Move();
-                    targets.Add(food.Id, food);
-                    Canvas.SetTop(food.Show(), food.Y);
-                    Canvas.SetLeft(food.Show(), food.X);
-                    food.RectForm = new Rect(Canvas.GetLeft(food.Show()), Canvas.GetTop(food.Show()), food.Show().Height, food.Show().Width);
-                    myCanvas.Children.Add(food.Show());
-                }
-                //MN.CreateDots(int.Parse(pixelCount.Text));
-                //var dif = NN.Learn(new double[] { 1 }, new double[,] { { 0, 0, 0, 0, 0 } }, 100000);
 
+                    pixels.Add(dot.Id, dot);
+                    Canvas.SetTop(dot.Show(), dot.Y);
+                    Canvas.SetLeft(dot.Show(), dot.X);
+                    myCanvas.Children.Add(dot.Show());
+                }
+                makeFood(1);
                 myTimer.Start();
             }
             catch (Exception)
@@ -481,23 +497,42 @@ namespace Neyron
             }
         }
 
-        //private void addPixel_Click(object sender, RoutedEventArgs e)
-        //{
-        //    try
-        //    {
-        //        myTimer.Stop();
+        private void makeFood(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var food = new Dot(new Rectangle()
+                {
+                    Height = 25,
+                    Width = 25,
+                    Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0))
+                }, "food", null)
+                { X = random.Next(0, (int)myCanvas.ActualHeight), Y = random.Next(0, (int)myCanvas.ActualWidth) };
+                targets.Add(food.Id, food);
+                Canvas.SetTop(food.Show(), food.Y);
+                Canvas.SetLeft(food.Show(), food.X);
+                myCanvas.Children.Add(food.Show());
+                food.RectForm = new Rect(Canvas.GetLeft(food.Show()), Canvas.GetTop(food.Show()), food.Show().Width, food.Show().Height);
+            }
+        }
 
-        //        for (int i = 0; i < int.Parse(pixelCount.Text); i++)
-        //        {
-        //            //CreateDot(pixels);
-        //        }
-        //        myTimer.Start();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        MessageBox.Show("Вводите только целое число", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        //    }
-        //}
+        private void bornDots(BloopBrain[] brains)
+        {
+            for (int i = 0; i < brains.Length; i++)
+            {
+                var dot = new Dot(new Rectangle()
+                {
+                    Height = 25,
+                    Width = 25,
+                    Fill = new SolidColorBrush(Color.FromRgb(0, (byte)random.Next(100, 256), 0))
+                }, "", brains[i])
+                { X = random.Next(0, (int)myCanvas.ActualHeight), Y = random.Next(0, (int)myCanvas.ActualWidth) };
+                pixels.Add(dot.Id, dot);
+                Canvas.SetTop(dot.Show(), dot.Y);
+                Canvas.SetLeft(dot.Show(), dot.X);
+                myCanvas.Children.Add(dot.Show());
+            }
+        }
 
         //private void CreateDot(Dictionary<int, Pixel> pixels)
         //{
