@@ -299,13 +299,14 @@ namespace Neyron
                         .Select(x => x.Value)
                         .ToList();
                     var result = parents[0].Brain.Crossover(parents[1].Brain);
+                    result[0].Mutate();
                     bornDots(result);
                 }
 
                 foreach (var pixel in pixels.Values.Where(x => x.Health > 0))
                 {
-                    if (tick % 500 == 0)
-                        pixel.Brain.Mutate();
+                    //if (tick % 500 == 0)
+                    //    pixel.Brain.Mutate();
 
                     foreach (var target in targets.Values)
                     {
