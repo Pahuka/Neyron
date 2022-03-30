@@ -5,23 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Neyron"
         mc:Ignorable="d"
-        Title="Neyron" Height="450" Width="450" ResizeMode="CanResize" WindowStartupLocation="CenterScreen" MinWidth="450" MinHeight="450">
+        Title="Neyron" Height="450" Width="475" ResizeMode="CanResize" WindowStartupLocation="CenterScreen" MinWidth="450" MinHeight="450">
     <Grid x:Name="mainGrid"  Background="#FFDCF9E4">
         <Grid.RowDefinitions>
-            <RowDefinition MaxHeight="25" Height="25*"></RowDefinition>
-            <RowDefinition Height="400*"></RowDefinition>
+            <RowDefinition MaxHeight="30" Height="25*"></RowDefinition>
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="29*"/>
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Border BorderBrush="Black" BorderThickness="1" Grid.Column="0" Grid.Row="1"/>
-        <TextBox x:Name="sizeX" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="14,0,0,0" UseLayoutRounding="False" Cursor="" Text="10" MaxLength="3" MaxLines="1" ToolTip="Максимальное значение 100"/>
-        <TextBox x:Name="sizeY" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="69,0,0,0" UseLayoutRounding="False" Cursor="" Text="10" MaxLength="3" MaxLines="1" ToolTip="Максимальное значение 100"/>
-        <TextBox x:Name="speed" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="116,0,0,0" UseLayoutRounding="False" Text="1" TextChanged="speed_TextChanged" ToolTip="Скорость" MaxLines="1"/>
-        <TextBox x:Name="pixelCount" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" UseLayoutRounding="False" Text="0" ToolTip="Количество точек" Margin="280,0,0,0" MaxLength="3" MaxLines="1" IsEnabled="False"/>
-        <Label Content="X" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" FontWeight="Bold"/>
-        <Label Content="Y" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="55,0,0,0" FontWeight="Bold"/>
-        <Button x:Name="sizeButton" Grid.Row="0" Content="Обновить поле" HorizontalAlignment="Left" Click="sizeButton_Click" Height="22" Width="100" Margin="332,2,0,1"/>
-        <Button x:Name="addPixel" Grid.Row="0" Content="Добавить точку" HorizontalAlignment="Left" Height="22" Width="100" Click="addPixel_Click" Margin="170,2,0,1"/>
+        <Border BorderBrush="Black" BorderThickness="1" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
+            <Canvas x:Name="myCanvas" Grid.Column="0" Grid.Row="1" ClipToBounds="True" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" Background="Bisque"/>
+        </Border>
+        <TextBox x:Name="sizeX" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="30" Height="18" Margin="117,0,0,0" UseLayoutRounding="False" Cursor="" Text="10" MaxLength="3" MaxLines="1" ToolTip="Максимальное значение 100"/>
+        <TextBox x:Name="speed" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" Margin="151,0,0,0" UseLayoutRounding="False" Text="1" TextChanged="speed_TextChanged" ToolTip="Скорость" MaxLines="1"/>
+        <TextBox x:Name="pixelCount" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="40" Height="18" UseLayoutRounding="False" Text="0" ToolTip="Количество точек" Margin="300,0,0,0" MaxLength="3" MaxLines="1" IsEnabled="False"/>
+        <Label Content="Количество точек" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,0,0"/>
+        <Button x:Name="sizeButton" Content="Обновить поле" HorizontalAlignment="Left" Click="sizeButton_Click" Width="100" Margin="355,0,0,0" Height="22" VerticalAlignment="Center"/>
+        <Button x:Name="addPixel" Grid.Row="0" Content="Добавить точку" HorizontalAlignment="Left" Height="22" Width="100" Click="addPixel_Click" Margin="195,4,0,4"/>
     </Grid>
 </Window>
