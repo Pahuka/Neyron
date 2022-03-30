@@ -11,8 +11,8 @@ namespace Neyron.GNN
         public float[,] inputWeights, hiddenWeights;
         private Random random = new Random();
 
-        int numberOfInputs = 4;
-        int numberOfHidden = 8;
+        int numberOfInputs = 5;
+        int numberOfHidden = 16;
         int numberOfOutputs = 4;
         public float fitness = 0;
         public BloopBrain()
@@ -54,7 +54,7 @@ namespace Neyron.GNN
             {
                 for (int j = 0; j < numberOfInputs; j++)
                 {
-                    hiddenLayers[i] += (inputWeights[i, j] * inputLayers[j]);
+                    hiddenLayers[i] += inputWeights[i, j] * inputLayers[j];
                 }
                 hiddenLayers[i] = tanh(hiddenLayers[i]);
             }
@@ -63,7 +63,7 @@ namespace Neyron.GNN
             {
                 for (int j = 0; j < numberOfHidden; j++)
                 {
-                    outputLayers[i] += (hiddenWeights[i, j] * hiddenLayers[j]);
+                    outputLayers[i] += hiddenWeights[i, j] * hiddenLayers[j];
                 }
                 outputLayers[i] = tanh(outputLayers[i]);
             }
