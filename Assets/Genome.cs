@@ -5,6 +5,7 @@ using System;
 public class Genome
 {
     private Random random = new Random();
+    //public static int skillCount = 5;
     public static int skillCount = 5;
 
     public float[] weights;
@@ -38,7 +39,7 @@ public class Genome
         {
             if (random.NextDouble() < 0.05)
             {
-                skills[i] = random.Next(0, 5);
+                skills[i] = random.Next(0, 4);
             }
         }
     }

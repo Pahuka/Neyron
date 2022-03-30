@@ -18,7 +18,7 @@ namespace Neyron.Objects
         //public NeuronNetwork Brain { get; set; }
         public BloopBrain Brain { get; set; }
         public int Score { get; set; }
-        //public Vector2 Position { get; set; }
+        public Vector2 Position { get; set; }
         public int Health { get; set; }
         public double X { get; set; }
         public double Y { get; set; }

@@ -1,25 +1,29 @@
-﻿using Neyron.Objects;
+﻿using Neyron;
+using Neyron.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Numerics;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Color = System.Drawing.Color;
 
 public class AI
 {
     public static int[] skillsTotal = new int[4];
-    //private Random random = new Random();
-    private Vector2 transform;
-    Dot dot;
-    //public GameObject bacteriumPrefab;
+    private Random random = new Random();
+    private Vector3 transform;
+    Pixel pixel;
 
     public int foodSkill = 0;
-    public int attackSkill;
+    public int attackSkill = 0;
     public int defSkill = 0;
     public float energy = 10;
-    //public float age = 0;
+    public float age = 0;
 
     private int inputsCount = 4;
     private Genome genome;
@@ -28,53 +32,77 @@ public class AI
     //private Rigidbody2D dot;
 
     // Start is called before the first frame update
-    public AI(Dot dot)
+    public AI(Pixel pixel)
     {
-        this.dot = dot;
-        attackSkill = dot.Attack;
+        this.pixel = pixel;
+        //attackSkill = dot.Attack;
     }
 
     // Update is called once per frame
-    void Update()
+    //void Update()
+    //{
+    //    transform.eulerAngles = new Vector3(0f, 0f, Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg - 90);
+    //    age += Time.deltaTime;
+    //}
+    public void FixedUpdate(Pixel[] pixels)
     {
-        transform = new Vector2(0f, 0f);
-        //age++;
-    }
-
-    public void FixedUpdate(Dot[] targets)
-    {
+        transform = new Vector3(0f, 0f, (float)(Math.Atan2(pixel.Y, pixel.X) * (360 / (Math.PI * 2))) - 90);
+        age++;
+        //Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, vision);
+        var colliders = new List<Pixel>();
         float vision = 5f + attackSkill;
+        foreach (var item in pixels.Where(x => x.Id != pixel.Id))
+        {
+            pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), vision, vision);
+            if (pixel.RectForm.IntersectsWith(item.RectForm))
+                colliders.Add(item);
+        }
+
         float[] inputs = new float[inputsCount];
 
         // количество соседних объектов
         float[] neighboursCount = new float[4];
 
         // вектара к центрам масс еды, красного, зеленого и синего
-        Vector2[] vectors = new Vector2[4];
+        Vector3[] vectors = new Vector3[4];
         for (int i = 0; i < 4; i++)
         {
             neighboursCount[i] = 0;
-            vectors[i] = new Vector2(0f, 0f);
+            vectors[i] = new Vector3(0f, 0f, 0f);
         }
-        for (int i = 0; i < targets.Length; i++)
+        for (int i = 0; i < colliders.Count; i++)
         {
-            if (targets[i].Id == dot.Id) continue;
-            if (targets[i].DotClass == "food")
+            if (colliders[i].Id == pixel.Id) continue;
+            if (colliders[i].DotClass == "food")
             {
                 neighboursCount[0]++;
-                vectors[0] += targets[i].Position - transform;
+                //vectors[0] += targets[i].Position - transform;
+                vectors[0] += colliders[i].Position - transform;
+                //pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), pixel.Show().Width, pixel.Show().Height);
+                //if (pixel.RectForm.IntersectsWith(pixels[i].RectForm))
+                //{
+                    FindFood(colliders[i]);
+                //}
+
             }
-            //else if (targets[i].DotClass == "bacterium")
-            //{
-            //    AI ai = targets[i].gameObject.GetComponent<AI>();
-            //    neighboursCount[1] += ai.attackSkill / 3f;
-            //    vectors[1] += (targets[i].gameObject.transform.position - transform) * ai.attackSkill;
-            //    neighboursCount[2] += ai.foodSkill / 3f;
-            //    vectors[2] += (targets[i].gameObject.transform.position - transform) * ai.foodSkill;
-            //    neighboursCount[3] += ai.defSkill / 3f;
-            //    vectors[3] += (targets[i].gameObject.transform.position - transform) * ai.defSkill;
-            //}
+
+            else if (colliders[i].DotClass == "bacterium")
+            {
+                AI ai = colliders[i].PixelAI;
+                neighboursCount[1] += ai.attackSkill / 3f;
+                vectors[1] += (colliders[i].Position - transform) * ai.attackSkill;
+                neighboursCount[2] += ai.foodSkill / 3f;
+                vectors[2] += (colliders[i].Position - transform) * ai.foodSkill;
+                neighboursCount[3] += ai.defSkill / 3f;
+                vectors[3] += (colliders[i].Position - transform) * ai.defSkill;
+                //pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), pixel.Show().Width, pixel.Show().Height);
+                //if (pixel.RectForm.IntersectsWith(pixels[i].RectForm))
+                //{
+                    Fight(colliders[i]);
+                //}
+            }
         }
+
         for (int i = 0; i < 4; i++)
         {
             if (neighboursCount[i] > 0)
@@ -82,7 +110,7 @@ public class AI
                 var divide = neighboursCount[i] * vision;
                 vectors[i].X /= divide;
                 vectors[i].Y /= divide;
-                inputs[i] = MagnitudeVector2(vectors[i]);
+                inputs[i] = MagnitudeVector3(vectors[i]);
             }
             else
             {
@@ -91,31 +119,31 @@ public class AI
         }
 
         float[] outputs = nn.FeedForward(inputs);
-        Vector2 target = new Vector2(0, 0);
+        Vector3 target = new Vector3(0, 0, 0);
         for (int i = 0; i < 4; i++)
         {
             if (neighboursCount[i] > 0)
             {
-                Vector2 dir = new Vector2(vectors[i].X, vectors[i].Y);
-                //dir.Normalize();
-                target += dir * outputs[i];
+                Vector3 dir = new Vector3(vectors[i].X, vectors[i].Y, 0);
+                dir *= outputs[i];
+                target += Vector3.Normalize(dir);
             }
         }
-        //if (MagnitudeVector2(target) > 1f) 
-        //    target.Normalize();
-        Vector2 velocity = new Vector2();
+        if (MagnitudeVector3(target) > 1f)
+            target = Vector3.Normalize(target);
+        Vector3 velocity = new Vector3();
         velocity += target * (0.25f + attackSkill * 0.05f);
         velocity *= 0.98f;
-        dot.Position = velocity;
-        dot.Move();
-        //float antibiotics = 1f;
+        pixel.Position = velocity;
+        pixel.Move();
+        float antibiotics = 1f;
         // концентрация антибиотиков
         // if(transform.position.x < -39) antibiotics = 4;
         // else if(transform.position.x < -20) antibiotics = 3;
         // else if(transform.position.x < -1) antibiotics = 2;
         // antibiotics = Mathf.Max(1f, antibiotics - defSkill);
-        //energy -= Time.deltaTime * antibiotics * antibiotics;
-        //energy--;
+        energy -= age * antibiotics * antibiotics;
+        energy--;
         //if (energy < 0f)
         //{
         //    Kill();
@@ -132,37 +160,39 @@ public class AI
         return (float)(Math.Pow(vector.X, 2) + Math.Pow(vector.Y, 2) + Math.Pow(vector.Z, 2));
     }
 
-    //void OnTriggerEnter2D(Collider2D col)
-    //{
-    //    if (foodSkill == 0) return;
-    //    if (col.gameObject.name == "food")
-    //    {
-    //        Eat(foodSkill);
-    //        Destroy(col.gameObject);
-    //    }
-    //}
+    void FindFood(Pixel col)
+    {
+        if (foodSkill == 0) return;
+        Eat(foodSkill);
+        //Destroy(col.gameObject);
+    }
 
-    //void OnCollisionEnter2D(Collision2D col)
-    //{
-    //    if (age < 1f) return;
-    //    if (attackSkill == 0) return;
-    //    if (col.gameObject.name == "bacterium")
-    //    {
-    //        AI ai = col.gameObject.GetComponent<AI>();
-    //        if (ai.age < 1f) return;
-    //        float damage = Math.Max(0f, attackSkill - ai.defSkill);
-    //        damage *= 4f;
-    //        damage = Math.Min(damage, ai.energy);
-    //        ai.energy -= damage * 1.25f;
-    //        Eat(damage);
-    //        if (ai.energy == 0f) ai.Kill();
-    //    }
-    //}
+    void Fight(Pixel enemy)
+    {
+        if (age < 1f) return;
+        if (enemy.PixelAI.attackSkill == 0) return;
+        if (enemy.DotClass == "bacterium")
+        {
+            AI ai = enemy.PixelAI;
+            if (ai.age < 1f) return;
+            float damage = Math.Max(0f, attackSkill - ai.defSkill);
+            damage *= 4f;
+            damage = Math.Min(damage, ai.energy);
+            ai.energy -= damage * 1.25f;
+            Eat(damage);
+            if (ai.energy == 0f)
+            {
+                enemy.Show().Fill = Brushes.Black;
+                enemy.Health = 0;
+            }
+            //ai.Kill();
+        }
+    }
 
     public void Init(Genome g)
     {
         genome = g;
-        //Color col = Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+        //var col = new SolidColorBrush().;
         float size = 0.75f;
         for (int i = 0; i < Genome.skillCount; i++)
         {
@@ -187,7 +217,7 @@ public class AI
                 size += 0.5f;
             }
         }
-        transform = new Vector2(size, size);
+        transform = new Vector3(size, size, size);
         //gameObject.GetComponent<SpriteRenderer>().color = col;
         nn = new NN(inputsCount, 8, 4);
         for (int i = 0; i < inputsCount; i++)
@@ -215,27 +245,26 @@ public class AI
     //    Destroy(gameObject);
     //}
 
-    //private void Eat(float food)
-    //{
-    //    energy += food;
-    //    if (energy > 16)
-    //    {
-    //        energy *= 0.5f;
-    //        //GameObject b = (GameObject)Object.Instantiate(Resources.Load("m1", typeof(GameObject)), new Vector3(0, 0, 0), Quaternion.identity);
-    //        var b = new Dot(new Ellipse()
-    //        {
-    //            Height = 25,
-    //            Width = 25,
-    //            Fill = new SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 0, 0))
-    //        }, "food")
-    //        { X = random.Next(0, (int)myCanvas.Height), Y = random.Next(0, (int)myCanvas.Width) };);
-    //        b.transform.position = transform.position;
-    //        b.name = "bacterium";
-    //        Genome g = new Genome(genome);
-    //        g.Mutate(0.5f);
-    //        AI ai = b.GetComponent<AI>();
-    //        ai.Init(g);
-    //        ai.energy = energy;
-    //    }
-    //}
+    private void Eat(float food)
+    {
+        energy += food;
+        if (energy > 16)
+        {
+            energy *= 0.5f;
+            //var b = new Pixel(new System.Windows.Shapes.Rectangle()
+            //{
+            //    Height = 25,
+            //    Width = 25,
+            //    Fill = new SolidColorBrush(System.Drawing.Color.FromRgb(0, (byte)random.Next(100, 256), 0))
+            //}, "bacterium")
+            //{ Y = random.Next(0, (int)myCanvas.ActualHeight), X = random.Next(0, (int)myCanvas.ActualWidth) };
+            //b.Position += transform;
+            //b.DotClass = "bacterium";
+            Genome g = new Genome(genome);
+            g.Mutate(0.5f);
+            //AI ai = b.GetComponent<AI>();
+            pixel.PixelAI.Init(g);
+            pixel.PixelAI.energy = energy;
+        }
+    }
 }
