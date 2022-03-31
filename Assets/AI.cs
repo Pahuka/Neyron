@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Color = System.Drawing.Color;
 
 public class AI
 {
@@ -22,7 +21,7 @@ public class AI
     public int foodSkill = 0;
     public int attackSkill = 0;
     public int defSkill = 0;
-    public float energy = 10;
+    public float energy = 100;
     public float age = 0;
 
     private int inputsCount = 4;
@@ -53,9 +52,12 @@ public class AI
         float vision = 5f + attackSkill;
         foreach (var item in pixels.Where(x => x.Id != pixel.Id))
         {
-            pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), vision, vision);
-            if (pixel.RectForm.IntersectsWith(item.RectForm))
-                colliders.Add(item);
+            if (pixel.DotClass != "food")
+            {
+                pixel.RectForm = new Rect(pixel.X, pixel.Y, vision, vision);
+                if (pixel.RectForm.IntersectsWith(item.RectForm))
+                    colliders.Add(item);
+            }
         }
 
         float[] inputs = new float[inputsCount];
@@ -108,8 +110,9 @@ public class AI
             if (neighboursCount[i] > 0)
             {
                 var divide = neighboursCount[i] * vision;
-                vectors[i].X /= divide;
-                vectors[i].Y /= divide;
+                //vectors[i].X /= divide;
+                //vectors[i].Y /= divide;
+                vectors[i] /= divide;
                 inputs[i] = MagnitudeVector3(vectors[i]);
             }
             else
@@ -119,35 +122,41 @@ public class AI
         }
 
         float[] outputs = nn.FeedForward(inputs);
-        Vector3 target = new Vector3(0, 0, 0);
+        Vector2 target = new Vector2(0, 0);
         for (int i = 0; i < 4; i++)
         {
             if (neighboursCount[i] > 0)
             {
-                Vector3 dir = new Vector3(vectors[i].X, vectors[i].Y, 0);
-                dir *= outputs[i];
-                target += Vector3.Normalize(dir);
+                Vector2 dir = new Vector2(vectors[i].X, vectors[i].Y);
+                dir = Vector2.Normalize(dir);
+                target += dir * outputs[i];
             }
         }
-        if (MagnitudeVector3(target) > 1f)
-            target = Vector3.Normalize(target);
-        Vector3 velocity = new Vector3();
+        if (MagnitudeVector2(target) > 1f)
+            target = Vector2.Normalize(target);
+        Vector2 velocity = new Vector2(pixel.Position.X, pixel.Position.Y);
+        //var velocity = 10f;
         velocity += target * (0.25f + attackSkill * 0.05f);
         velocity *= 0.98f;
-        pixel.Position = velocity;
+        velocity = Vector2.Normalize(velocity);
+        pixel.X = velocity.X;
+        pixel.Y = velocity.Y;
         pixel.Move();
-        float antibiotics = 1f;
+
+        //float antibiotics = 1f;
         // концентрация антибиотиков
         // if(transform.position.x < -39) antibiotics = 4;
         // else if(transform.position.x < -20) antibiotics = 3;
         // else if(transform.position.x < -1) antibiotics = 2;
         // antibiotics = Mathf.Max(1f, antibiotics - defSkill);
-        energy -= age * antibiotics * antibiotics;
+        //energy -= age * antibiotics * antibiotics;
         energy--;
-        //if (energy < 0f)
-        //{
-        //    Kill();
-        //}
+        if (energy < 0f & pixel.DotClass != "food")
+        {
+            pixel.Show().Fill = Brushes.Black;
+            pixel.Health = 0;
+            //Kill();
+        }
     }
 
     private float MagnitudeVector2(Vector2 vector)
@@ -251,15 +260,15 @@ public class AI
         if (energy > 16)
         {
             energy *= 0.5f;
-            //var b = new Pixel(new System.Windows.Shapes.Rectangle()
-            //{
-            //    Height = 25,
-            //    Width = 25,
-            //    Fill = new SolidColorBrush(System.Drawing.Color.FromRgb(0, (byte)random.Next(100, 256), 0))
-            //}, "bacterium")
-            //{ Y = random.Next(0, (int)myCanvas.ActualHeight), X = random.Next(0, (int)myCanvas.ActualWidth) };
-            //b.Position += transform;
-            //b.DotClass = "bacterium";
+            var b = new Pixel(new System.Windows.Shapes.Rectangle()
+            {
+                Height = 25,
+                Width = 25,
+                Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 0, (byte)random.Next(100, 256), 0))
+            }, "bacterium")
+            { Y = pixel.Y, X = pixel.X };
+            b.Position += transform;
+            b.DotClass = "bacterium";
             Genome g = new Genome(genome);
             g.Mutate(0.5f);
             //AI ai = b.GetComponent<AI>();
