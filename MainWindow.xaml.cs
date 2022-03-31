@@ -297,10 +297,10 @@ namespace Neyron
                 //if (x > 100 || y > 100)
                 //    throw new ArgumentException();
 
-                if (tick % 1000 == 0 & pixels.Where(x => x.Value.Health > 0 & x.Value.Score >= 1000).Count() >= 2)
+                if (tick % 1000 == 0 & pixels.Count() >= 2)
                 {
                     var parents = pixels
-                        .OrderByDescending(x => x.Value.Score)
+                        .OrderByDescending(x => x.Value.Brain.fitness)
                         .Where(x => x.Value.Health > 0)
                         .Take(2)
                         .Select(x => x.Value)
@@ -335,45 +335,53 @@ namespace Neyron
                                 if (i == 0)
                                 {
                                     //var step = GenerateStep(pixel, 1, 0);
+                                    //pixel.X = step.Item1;
+
                                     if (!IsWall(pixel, 1, 0))
                                         pixel.X += 1;
                                     else
                                     {
                                         pixel.Brain.fitness -= 0.1f;
-                                        pixel.Brain.Mutate();
+                                        //pixel.Brain.Mutate();
                                     }
                                 }
                                 if (i == 1)
                                 {
                                     //var step = GenerateStep(pixel, -1, 0);
+                                    //pixel.X = step.Item1;
+
                                     if (!IsWall(pixel, 1, 0))
                                         pixel.X -= 1;
                                     else
                                     {
                                         pixel.Brain.fitness -= 0.1f;
-                                        pixel.Brain.Mutate();
+                                        //pixel.Brain.Mutate();
                                     }
                                 }
                                 if (i == 2)
                                 {
                                     //var step = GenerateStep(pixel, 0, 1);
+                                    //pixel.Y = step.Item2;
+
                                     if (!IsWall(pixel, 0, 1))
                                         pixel.Y += 1;
                                     else
                                     {
                                         pixel.Brain.fitness -= 0.1f;
-                                        pixel.Brain.Mutate();
+                                        //pixel.Brain.Mutate();
                                     }
                                 }
                                 if (i == 3)
                                 {
                                     //var step = GenerateStep(pixel, 0, -1);
+                                    //pixel.Y = step.Item2;
+
                                     if (!IsWall(pixel, 0, -1))
                                         pixel.Y -= 1;
                                     else
                                     {
                                         pixel.Brain.fitness -= 0.1f;
-                                        pixel.Brain.Mutate();
+                                        //pixel.Brain.Mutate();
                                     }
                                 }
                             }
@@ -390,6 +398,14 @@ namespace Neyron
                             var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
                             if (newDistance <= distance)
                                 pixel.Brain.fitness += 0.1f;
+                        }
+                        var pixelsCollide = pixels.Values.Where(x => x.RectForm.IntersectsWith(pixel.RectForm));
+                        if(pixelsCollide.Count() != 0)
+                        {
+                            foreach (var item in pixelsCollide)
+                            {
+                                item.Health -= pixel.Attack;
+                            }
                         }
                         pixel.Health--;
                         //if (pixel.Health <= 0)

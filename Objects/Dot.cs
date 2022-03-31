@@ -17,6 +17,7 @@ namespace Neyron.Objects
         public string DotClass { get; set; }
         //public NeuronNetwork Brain { get; set; }
         public BloopBrain Brain { get; set; }
+        public int Attack { get; set; }
         public int Score { get; set; }
         public Vector2 Position { get; set; }
         public int Health { get; set; }
@@ -33,7 +34,8 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
-            Health = 30000;
+            Health = 10000;
+            Attack = new Random().Next(1, 100);
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
             //RectForm = new Rect();
