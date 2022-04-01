@@ -18,7 +18,7 @@ namespace Neyron.Objects
         //public NeuronNetwork Brain { get; set; }
         public BloopBrain Brain { get; set; }
         public int Attack { get; set; }
-        public int Score { get; set; }
+        public int Neighbours { get; set; }
         public Vector2 Position { get; set; }
         public int Health { get; set; }
         public double X { get; set; }
@@ -27,6 +27,11 @@ namespace Neyron.Objects
         public Rect RectForm { get; set; }
         public int Id { get; set; }
 
+        public Dot()
+        {
+
+        }
+
         public Dot(Shape form, string dotClass, BloopBrain brain)
         {            
             GlobalId++;
@@ -34,7 +39,7 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
-            Health = 10000;
+            Health = 500;
             Attack = new Random().Next(1, 100);
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
