@@ -279,7 +279,7 @@ namespace Neyron
                 pixelCount.Text = tick.ToString();
                 var random = new Random();
 
-                if (tick % 1000 == 0 || pixels.Where(x => x.Value.Health > 0).Count() == 0)
+                if (tick % 5000 == 0 || pixels.Where(x => x.Value.Health > 0).Count() == 0)
                 {
                     var result = new List<BloopBrain>();
                     var parents = pixels
@@ -331,21 +331,9 @@ namespace Neyron
                     {
                         if (i == 0)
                         {
-                            if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                            if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
                             {
                                 //var step = GenerateStep(pixel, 1, 0);
-                                //pixel.X = step.Item1;
-
-                                if (!IsWall(pixel, 1, 0))
-                                    pixel.X += 1;
-                                //else
-                                //{
-                                //    pixel.Brain.fitness -= 0.5f;
-                                //}
-                            }
-                            else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
-                            {
-                                //var step = GenerateStep(pixel, -1, 0);
                                 //pixel.X = step.Item1;
 
                                 if (!IsWall(pixel, -1, 0))
@@ -355,28 +343,40 @@ namespace Neyron
                                 //    pixel.Brain.fitness -= 0.5f;
                                 //}
                             }
-                        }
-                        if (i == 1)
-                        {
-                            if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                            else if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
                             {
-                                //var step = GenerateStep(pixel, 0, 1);
-                                //pixel.Y = step.Item2;
+                                //var step = GenerateStep(pixel, -1, 0);
+                                //pixel.X = step.Item1;
 
-                                if (!IsWall(pixel, 0, 1))
-                                    pixel.Y += 1;
+                                if (!IsWall(pixel, 1, 0))
+                                    pixel.X += 1;
                                 //else
                                 //{
                                 //    pixel.Brain.fitness -= 0.5f;
                                 //}
                             }
-                            else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
+                        }
+                        if (i == 1)
+                        {
+                            if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
+                            {
+                                //var step = GenerateStep(pixel, 0, 1);
+                                //pixel.Y = step.Item2;
+
+                                if (!IsWall(pixel, 0, -1))
+                                    pixel.Y -= 1;
+                                //else
+                                //{
+                                //    pixel.Brain.fitness -= 0.5f;
+                                //}
+                            }
+                            else if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
                             {
                                 //var step = GenerateStep(pixel, 0, -1);
                                 //pixel.Y = step.Item2;
 
-                                if (!IsWall(pixel, 0, -1))
-                                    pixel.Y -= -1;
+                                if (!IsWall(pixel, 0, 1))
+                                    pixel.Y += 1;
                                 //else
                                 //{
                                 //    pixel.Brain.fitness -= 0.5f;
