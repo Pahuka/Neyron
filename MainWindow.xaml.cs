@@ -391,7 +391,7 @@ namespace Neyron
                     {
                         target.Show().Stroke = Brushes.Black;
                         pixel.Health += 10;
-                        pixel.Brain.fitness += 1;
+                        pixel.Brain.fitness += 5;
                         //pixel.Show().ToolTip = ToolTip = new ToolTip() { Content = $"{pixel.Score}" };
                         //var newDistance = Math.Sqrt(Math.Pow(target.X - pixel.X, 2) + Math.Pow(target.Y - pixel.Y, 2));
                         //if (newDistance <= distance)
@@ -400,7 +400,7 @@ namespace Neyron
                     var pixelsCollide = pixels.Values.Where(x => x.Id != pixel.Id & x.RectForm.IntersectsWith(pixel.RectForm));
                     if (pixelsCollide.Count() != 0)
                     {
-                        pixel.Brain.fitness -= 5;
+                        pixel.Brain.fitness -= 1;
                         pixel.Neighbours = pixelsCollide.Count();
                         //foreach (var item in pixelsCollide)
                         //{
