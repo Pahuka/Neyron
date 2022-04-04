@@ -39,7 +39,7 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
-            Health = 1000;
+            Health = 5000;
             Attack = new Random().Next(1, 100);
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
