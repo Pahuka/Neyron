@@ -17,6 +17,7 @@ namespace Neyron.Objects
         public string DotClass { get; set; }
         //public NeuronNetwork Brain { get; set; }
         public BloopBrain Brain { get; set; }
+        public float Speed { get; set; }
         public int Attack { get; set; }
         public int Neighbours { get; set; }
         public Vector2 Position { get; set; }
@@ -39,20 +40,25 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
-            Health = 8000;
+            Health = 10000;
             Attack = new Random().Next(1, 100);
+            Speed = 1f;
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
             //RectForm = new Rect();
         }
 
-        public void Move(Vector2 target)
+        public Vector2 GetVector()
         {
             Position = new Vector2((float)X, (float)Y);
-            Position = target;
-            Position = Vector2.Normalize(Position);
-            X += Position.X;
-            Y += Position.Y;
+            return Position;
+        }
+
+        public void Move(double x, double y)
+        {
+            var angle = Math.Atan2(X - x, Y - y);
+            X -= Speed * Math.Sin(angle);
+            Y -= Speed * Math.Cos(angle);
         }
 
         public Shape Show()

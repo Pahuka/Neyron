@@ -318,7 +318,7 @@ namespace Neyron
             //pixelCount.Text = tick.ToString();
             var random = new Random();
 
-            if (tick % 10000 == 0 || pixels.Where(x => x.Value.Health > 0).Count() == 0)
+            if (pixels.Where(x => x.Value.Health > 0).Count() == 0)
             //if (tick % 10000 == 0)
             {
                 generation++;
@@ -335,7 +335,7 @@ namespace Neyron
                 {
                     myCanvas.Children.Remove(item.Value.Show());
                 }
-                pixels.Clear();
+                //pixels.Clear();
                 if (parents.Length >= 2)
                 {
                     for (int i = 1; i < parents.Length; i++)
@@ -363,88 +363,98 @@ namespace Neyron
                         target = food;
                     }
                 }
-                //pixel.Brain.inputLayers[0] = (float)pixel.X;
-                //pixel.Brain.inputLayers[1] = (float)pixel.Y;
-                //pixel.Brain.inputLayers[0] = (float)minDistance;
-                //pixel.Brain.inputLayers[1] = pixel.Brain.fitness;
-                //pixel.Brain.inputLayers[4] = pixel.Neighbours;
-                //pixel.Brain.ping();
-                pixel.Move(target.Position);
-                for (int i = 0; i < pixel.Brain.outputLayers.Length; i++)
+
+                var minPixelDistance = double.MaxValue;
+                var neighbour = new Dot();
+                foreach (var item in pixels.Values.Where(x => x.Health > 0))
                 {
-                    if (i == 0)
+                    var tempDistance = Math.Sqrt(Math.Pow(item.X - pixel.X, 2) + Math.Pow(item.Y - pixel.Y, 2));
+                    if (tempDistance <= minPixelDistance)
                     {
-                        //if (!IsWall(pixel, pixel.Brain.outputLayers[i], 0))
-                        //    pixel.X += pixel.Brain.outputLayers[i];
-                        //var step = GenerateStep(pixel, pixel.Brain.outputLayers[i], 0);
-                        //pixel.X = step.Item1;
-                        //else
-                        //{
-                        //    pixel.Brain.fitness -= 0.01f;
-                        //}
-                        if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
-                        {
-                            //var step = GenerateStep(pixel, -1, 0);
-                            //pixel.X = step.Item1;
-
-                            if (!IsWall(pixel, 1, 0))
-                                pixel.X += 1;
-                            else
-                            {
-                                pixel.Brain.fitness -= 0.01f;
-                            }
-                        }
-                        else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
-                        {
-                            //var step = GenerateStep(pixel, 1, 0);
-                            //pixel.X = step.Item1;
-
-                            if (!IsWall(pixel, -1, 0))
-                                pixel.X -= 1;
-                            else
-                            {
-                                pixel.Brain.fitness -= 0.01f;
-                            }
-                        }
-                    }
-                    if (i == 1)
-                    {
-                        //if (!IsWall(pixel, 0, pixel.Brain.outputLayers[i]))
-                        //    pixel.Y += pixel.Brain.outputLayers[i];
-                        //var step = GenerateStep(pixel, 0, pixel.Brain.outputLayers[i]);
-                        //pixel.Y = step.Item2;
-                        //else
-                        //{
-                        //    pixel.Brain.fitness -= 0.01f;
-                        //}
-                        if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
-                        {
-                            //var step = GenerateStep(pixel, 0, -1);
-                            //pixel.Y = step.Item2;
-
-                            if (!IsWall(pixel, 0, 1))
-                                pixel.Y += 1;
-                            else
-                            {
-                                pixel.Brain.fitness -= 0.01f;
-                            }
-                        }
-                        else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
-                        {
-                            //var step = GenerateStep(pixel, 0, 1);
-                            //pixel.Y = step.Item2;
-
-                            if (!IsWall(pixel, 0, -1))
-                                pixel.Y -= 1;
-                            else
-                            {
-                                pixel.Brain.fitness -= 0.01f;
-                            }
-                        }
+                        minPixelDistance = tempDistance;
+                        neighbour = item;
                     }
                 }
-                Canvas.SetTop(pixel.Show(), pixel.Y);
-                Canvas.SetLeft(pixel.Show(), pixel.X);
+
+                for (int i = 0; i < pixel.Brain.outputLayers.Length; i++)
+                {
+                    if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                        pixel.Move(target.X, target.Y);
+                    else
+                        pixel.Move(neighbour.X, neighbour.Y);
+
+                    //if (i == 0)
+                    //{
+                    //    //if (!IsWall(pixel, pixel.Brain.outputLayers[i], 0))
+                    //    //    pixel.X += pixel.Brain.outputLayers[i];
+                    //    //var step = GenerateStep(pixel, pixel.Brain.outputLayers[i], 0);
+                    //    //pixel.X = step.Item1;
+                    //    //else
+                    //    //{
+                    //    //    pixel.Brain.fitness -= 0.01f;
+                    //    //}
+                    //    if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                    //    {
+                    //        //var step = GenerateStep(pixel, -1, 0);
+                    //        //pixel.X = step.Item1;
+
+                    //        //if (!IsWall(pixel, 1, 0))
+                    //            pixel.Move(target.X, target.Y);
+                    //        //else
+                    //        //{
+                    //        //    pixel.Brain.fitness -= 0.01f;
+                    //        //}
+                    //    }
+                    //    //else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
+                    //    //{
+                    //    //    //var step = GenerateStep(pixel, 1, 0);
+                    //    //    //pixel.X = step.Item1;
+
+                    //    //    if (!IsWall(pixel, -1, 0))
+                    //    //        pixel.X -= 1;
+                    //    //    else
+                    //    //    {
+                    //    //        pixel.Brain.fitness -= 0.01f;
+                    //    //    }
+                    //    //}
+                    //}
+                    //if (i == 1)
+                    //{
+                    //    //if (!IsWall(pixel, 0, pixel.Brain.outputLayers[i]))
+                    //    //    pixel.Y += pixel.Brain.outputLayers[i];
+                    //    //var step = GenerateStep(pixel, 0, pixel.Brain.outputLayers[i]);
+                    //    //pixel.Y = step.Item2;
+                    //    //else
+                    //    //{
+                    //    //    pixel.Brain.fitness -= 0.01f;
+                    //    //}
+                    //    if (Math.Round(pixel.Brain.outputLayers[i]) == 1)
+                    //    {
+                    //        //var step = GenerateStep(pixel, 0, -1);
+                    //        //pixel.Y = step.Item2;
+
+                    //        //if (!IsWall(pixel, 0, 1))
+                    //            pixel.Move(neighbour.X, neighbour.Y);
+                    //        //else
+                    //        //{
+                    //        //    pixel.Brain.fitness -= 0.01f;
+                    //        //}
+                    //    }
+                    //    //else if (Math.Round(pixel.Brain.outputLayers[i]) == -1)
+                    //    //{
+                    //    //    //var step = GenerateStep(pixel, 0, 1);
+                    //    //    //pixel.Y = step.Item2;
+
+                    //    //    if (!IsWall(pixel, 0, -1))
+                    //    //        pixel.Y -= 1;
+                    //    //    else
+                    //    //    {
+                    //    //        pixel.Brain.fitness -= 0.01f;
+                    //    //    }
+                    //    //}
+                    //}
+                }
+                
                 //pixel.RectForm = new Rect(Canvas.GetLeft(pixel.Show()), Canvas.GetTop(pixel.Show()), pixel.Show().Width, pixel.Show().Height);
                 pixel.RectForm = new Rect(pixel.X - pixel.Show().Width / 2, pixel.Y - pixel.Show().Height / 2, pixel.Show().Width, pixel.Show().Height);
                 var newFoodDistance = 0.0;
@@ -462,6 +472,7 @@ namespace Neyron
                         pixel.Brain.fitness += 0.1f;
                     if(target.Health <= 0)
                     {
+                        pixel.Speed = 0.5f;
                         myCanvas.Children.Remove(target.Show());
                         targets.Clear();
                         makeFood(1);
@@ -482,27 +493,20 @@ namespace Neyron
                     }
                 }
 
-                var minPixelDistance = double.MaxValue;
-                foreach (var item in pixels.Values)
-                {
-                    var tempDistance = Math.Sqrt(Math.Pow(item.X - pixel.X, 2) + Math.Pow(item.Y - pixel.Y, 2));
-                    if (tempDistance <= minPixelDistance)
-                    {
-                        minPixelDistance = tempDistance;
-                    }
-                }
+                Canvas.SetTop(pixel.Show(), pixel.Y);
+                Canvas.SetLeft(pixel.Show(), pixel.X);
 
                 pixel.Health--;
-                pixel.Brain.inputLayers[0] = Normalization(pixel.X);
-                pixel.Brain.inputLayers[1] = Normalization(pixel.Y);
-                //pixel.Brain.inputLayers[2] = (float)(target.X - pixel.X);
-                //pixel.Brain.inputLayers[3] = (float)(target.Y - pixel.Y);
-                pixel.Brain.inputLayers[2] = Normalization(newFoodDistance);
-                //pixel.Brain.inputLayers[3] = pixel.Brain.fitness;
-                pixel.Brain.inputLayers[3] = Normalization(minPixelDistance);
+                //pixel.Brain.inputLayers[0] = Normalization(pixel.X);
+                //pixel.Brain.inputLayers[1] = Normalization(pixel.Y);
+                pixel.Brain.inputLayers[0] = (float)newFoodDistance;
+                pixel.Brain.inputLayers[1] = (float)(minPixelDistance);
+                pixel.Brain.inputLayers[2] = (float)(pixel.Neighbours);
+
                 pixel.Brain.ping();
                 target.Show().Stroke = Brushes.White;
             }
+
             var deads = pixels.Values
                 .OrderBy(x => x.Brain.fitness)
                 .Where(x => x.Health <= 0)
