@@ -39,18 +39,20 @@ namespace Neyron.Objects
             Form = form;
             DotClass = dotClass;
             Brain = brain;
-            Health = 5000;
+            Health = 8000;
             Attack = new Random().Next(1, 100);
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
             //RectForm = new Rect();
         }
 
-        public void Move()
+        public void Move(Vector2 target)
         {
-            //var point = new Point(X, Y);
-            //var size = new Size(Form.Height, Form.Width);
-            RectForm = new Rect(X, Y, 25, 25);
+            Position = new Vector2((float)X, (float)Y);
+            Position = target;
+            Position = Vector2.Normalize(Position);
+            X += Position.X;
+            Y += Position.Y;
         }
 
         public Shape Show()

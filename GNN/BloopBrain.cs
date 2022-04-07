@@ -11,8 +11,8 @@ namespace Neyron.GNN
         public float[,] inputWeights, hiddenWeights;
         private Random random = new Random();
 
-        int numberOfInputs = 3;
-        int numberOfHidden = 3;
+        int numberOfInputs = 4;
+        int numberOfHidden = 4;
         int numberOfOutputs = 2;
         public float fitness = 0;
         public BloopBrain()
