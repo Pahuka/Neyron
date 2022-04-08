@@ -366,7 +366,7 @@ namespace Neyron
 
                 var minPixelDistance = double.MaxValue;
                 var neighbour = new Dot();
-                foreach (var item in pixels.Values.Where(x => x.Id != pixel.Id && x.Health > 0 && x.Attack <= pixel.Attack))
+                foreach (var item in pixels.Values.Where(x => x.Clan != pixel.Clan && x.Id != pixel.Id && x.Health > 0 && x.Attack <= pixel.Attack))
                 {
                     var tempDistance = Math.Sqrt(Math.Pow(item.X - pixel.X, 2) + Math.Pow(item.Y - pixel.Y, 2));
                     if (tempDistance <= minPixelDistance)
@@ -492,7 +492,7 @@ namespace Neyron
                     }
                 }
 
-                var pixelsCollide = pixels.Values.Where(x => x.Health > 0).Where(x => x.Id != pixel.Id & x.RectForm.IntersectsWith(pixel.RectForm));
+                var pixelsCollide = pixels.Values.Where(x => x.Health > 0).Where(x => x.Clan != pixel.Clan && x.Id != pixel.Id & x.RectForm.IntersectsWith(pixel.RectForm));
                 if (pixelsCollide.Count() != 0)
                 {
                     //pixel.Brain.fitness -= 0.05f;
@@ -510,15 +510,15 @@ namespace Neyron
                 Canvas.SetLeft(pixel.Show(), pixel.X);
 
 
-                //pixel.Brain.inputLayers[0] = Normalization(pixel.X);
-                //pixel.Brain.inputLayers[1] = Normalization(pixel.Y);
+                pixel.Brain.inputLayers[0] = Normalization(pixel.X);
+                pixel.Brain.inputLayers[1] = Normalization(pixel.Y);
                 //pixel.Brain.inputLayers[0] = (float)newFoodDistance;
                 //pixel.Brain.inputLayers[1] = (float)(minPixelDistance);
                 //pixel.Brain.inputLayers[2] = (float)(pixel.Neighbours);
-                pixel.Brain.inputLayers[0] = Normalization(newFoodDistance);
-                pixel.Brain.inputLayers[1] = Normalization(minPixelDistance);
-                pixel.Brain.inputLayers[2] = Normalization(pixel.Neighbours);
-                pixel.Brain.inputLayers[3] = Normalization(pixel.Health);
+                pixel.Brain.inputLayers[2] = Normalization(newFoodDistance);
+                pixel.Brain.inputLayers[3] = Normalization(minPixelDistance);
+                pixel.Brain.inputLayers[4] = Normalization(pixel.Neighbours);
+                pixel.Brain.inputLayers[5] = Normalization(pixel.Health);
 
                 pixel.Brain.ping();
                 target.Show().Stroke = Brushes.White;

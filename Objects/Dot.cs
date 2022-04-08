@@ -17,6 +17,7 @@ namespace Neyron.Objects
         public string DotClass { get; set; }
         //public NeuronNetwork Brain { get; set; }
         public BloopBrain Brain { get; set; }
+        public int Clan { get; set; }
         public float Speed { get; set; }
         public int Attack { get; set; }
         public int Neighbours { get; set; }
@@ -42,7 +43,8 @@ namespace Neyron.Objects
             Brain = brain;
             Health = 2000;
             Attack = new Random().Next(1, 100);
-            Speed = 1f;
+            Speed = 1.0f;
+            Clan = new Random().Next(1, 6);
             //var point = new Point(X, Y);
             //var size = new Size(form.Height, form.Width);
             //RectForm = new Rect();
